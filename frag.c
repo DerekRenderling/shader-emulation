@@ -12,7 +12,7 @@
         pow(1 - sqrt(X*X + Y*Y), 2) + Z*Z - 0.1
     
     #define surface(C,D,T) \
-        torus(C,D,T)
+        sphere(C,D,T)
     
     void main() {
         // P(t) = C + t * D, t >= 0
