@@ -3,12 +3,15 @@ import Graphics.UI.GLUT
 import Control.Applicative ((<$>),(<*>))
 import Control.Concurrent (newMVar,takeMVar,putMVar)
 import qualified Data.Set as Set
+import Control.Monad (liftM2)
+import Shader
 
 data State = State {
-    cameraPos :: Vector3 GLdouble,
-    cameraDir :: Vector3 GLdouble,
+    cameraPos :: Vertex3 GLfloat,
+    cameraDir :: Vertex3 GLfloat,
     keySet :: Set.Set Key,
-    mousePos :: (Int,Int)
+    mousePos :: (Int,Int),
+    simProg :: Program
 }
 
 main :: IO ()
@@ -21,11 +24,13 @@ main = do
     depthMask $= Enabled
     lighting $= Disabled
     
+    prog <- newProgram =<< liftM2 (,) (readFile "vert.c") (readFile "frag.c")
     stateVar <- newMVar $ State {
-        cameraPos = Vector3 0 (-5) 0,
-        cameraDir = Vector3 0 (-1) 0,
+        cameraPos = Vertex3 0 (-5) 0,
+        cameraDir = Vertex3 0 (-1) 0,
         keySet = Set.empty,
-        mousePos = (0,0)
+        mousePos = (0,0),
+        simProg = prog
     }
     
     -- return from the main loop so ghci stays running
@@ -55,7 +60,11 @@ display state = do
     clear [ ColorBuffer ]
     
     loadIdentity
-    renderPrimitive Quads $ do
+    let prog = simProg state
+    bindProgram prog "C" (cameraPos state)
+    bindProgram prog "D" (cameraDir state)
+    
+    withProgram prog $ renderPrimitive Quads $ do
         --color $ Color3 0.75 0.65 (0.55 :: GLfloat)
         color $ Color3 1 1 (1 :: GLfloat)
         mapM_ vertex [
@@ -64,10 +73,8 @@ display state = do
                 :: Vertex3 GLfloat
             ]
     
-    let state' = state
-    
     flush
     swapBuffers
     postRedisplay Nothing
     
-    return state'
+    return state
