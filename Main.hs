@@ -31,7 +31,7 @@ main = do
     prog <- join $ liftM2 newProgram (readFile "vert.c") (readFile "frag.c")
     stateVar <- newMVar $ State {
         cameraPos = Vertex3 0 (-5) 0,
-        cameraDir = Vertex3 0 (-1) 0,
+        cameraDir = Vertex3 0 0 1,
         keySet = Set.empty,
         mousePos = (0,0),
         simProg = prog
@@ -99,7 +99,7 @@ display state = do
     loadIdentity
     let prog = simProg state
     bindProgram prog "C" (cameraPos state)
-    bindProgram prog "D" (cameraDir state)
+    --bindProgram prog "D" (cameraDir state)
     
     withProgram prog $ renderPrimitive Quads $ do
         color $ Color3 1 1 (1 :: GLfloat)

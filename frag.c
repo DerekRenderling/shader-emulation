@@ -1,5 +1,6 @@
 uniform vec3 C;
-uniform vec3 D;
+//uniform vec3 D;
+varying vec3 D;
 
 #define X (C.x + T * D.x)
 #define Y (C.y + T * D.y)
@@ -16,21 +17,22 @@ uniform vec3 D;
 
 void main() {
     // P(t) = C + t * D, t >= 0
-    float xn = 1.0;
-    float xn_prev = 0.0;
+    float xn = 1.1;
+    float xn_prev = 0.1;
     
     // root finding using the secant method
+    const float epsilon = 0.01;
     float d;
     for (int i = 0; i < 4; i++) {
         float f_xn = surface(C,D,xn);
         float f_xn_prev = surface(C,D,xn_prev);
         d = (xn - xn_prev) / (f_xn - f_xn_prev) * f_xn;
-        if (abs(d) < 0.001) break; // found an acceptable zero
+        if (abs(d) < epsilon) break; // found an acceptable zero
         xn_prev = xn;
         xn -= d;
     }
     
-    if (abs(d) > 0.001) {
+    if (abs(d) > epsilon) {
         gl_FragColor = vec4(0.0,1.0,0.0,1.0);
     }
     else {
