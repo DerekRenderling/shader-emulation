@@ -1,10 +1,9 @@
 #include "emulate.cpp"
 
-/*
+#ifdef GPU
 uniform vec3 C;
-//uniform vec3 D;
 varying vec3 D;
-*/
+#endif
 
 #define X(T) (C.x + T * D.x)
 #define Y(T) (C.y + T * D.y)
@@ -35,6 +34,7 @@ void main() {
         if ((a > 0 && b < 0) || (a < 0 && b > 0)) break;
         xn_b = xn_a;
     }
+    //std::cerr << xn_a << "," << xn_b << std::endl;
     
     // then binary search on that interval to a fixed depth
     for (float t = xn_b; t <= 0.1; t = 0.5 * (xn_a + xn_b)) {
@@ -44,6 +44,7 @@ void main() {
         if ((a > 0 && b < 0) || (a < 0 && b > 0)) break;
         xn_b = xn_a;
     }
+    //std::cerr << xn_a << "," << xn_b << std::endl;
     
     // use the secant method on this interval
     const float epsilon = 0.01;
@@ -56,8 +57,12 @@ void main() {
         xn_b = xn_a;
         xn_a -= d;
     }
+    //std::cerr << xn_a << "," << xn_b << std::endl;
     
-    if (abs(d) > epsilon) {
+    if (d != d) { // NaN
+        gl_FragColor = vec4(0.0,0.0,0.0,0.0);
+    }
+    else if (abs(d) > epsilon) {
         gl_FragColor = vec4(0.0,1.0,0.0,1.0);
     }
     else {

@@ -79,16 +79,36 @@ struct vec4 {
         return vec3(v.x OP f, v.y OP f, v.z OP f); \
     }
 
+#define op_vec4(OPN,OP) \
+    vec4 OPN(const vec4 v1, const vec4 v2) { \
+        return vec4(v1.x OP v2.x, v1.y OP v2.y, v1.z OP v2.z, v1.w OP v2.w); \
+    } \
+    vec4 OPN(const vec4 v, float f) { \
+        return vec4(v.x OP f, v.y OP f, v.z OP f, v.w OP f); \
+    } \
+    vec4 OPN(float f, const vec4 v) { \
+        return vec4(v.x OP f, v.y OP f, v.z OP f, v.w OP f); \
+    }
+
 op_vec3(operator+,+);
 op_vec3(operator-,-);
 op_vec3(operator*,*);
 op_vec3(operator/,/);
+
+op_vec4(operator+,+);
+op_vec4(operator-,-);
+op_vec4(operator*,*);
+op_vec4(operator/,/);
 
 vec3::vec3(const vec4 & v) {
     x = v.x; y = v.y; z = v.z;
 }
 
 std::ostream & operator<<(std::ostream & os, vec3 & v) {
+    return os << v.to_s();
+}
+
+std::ostream & operator<<(std::ostream & os, vec4 & v) {
     return os << v.to_s();
 }
 
@@ -109,22 +129,6 @@ std::istream & operator>>(std::istream & is, vec4 & v) {
     v.x = x; v.y = y; v.z = z; v.w = w;
     return is;
 }
-
-#define op_vec4(OPN,OP) \
-    vec4 OPN(const vec4 v1, const vec4 v2) { \
-        return vec4(v1.x OP v2.x, v1.y OP v2.y, v1.z OP v2.z, v1.w OP v2.w); \
-    } \
-    vec4 OPN(const vec4 v, float f) { \
-        return vec4(v.x OP f, v.y OP f, v.z OP f, v.w OP f); \
-    } \
-    vec4 OPN(float f, const vec4 v) { \
-        return vec4(v.x OP f, v.y OP f, v.z OP f, v.w OP f); \
-    }
-
-op_vec4(operator+,+);
-op_vec4(operator-,-);
-op_vec4(operator*,*);
-op_vec4(operator/,/);
 
 #define min fmin
 #define max fmax
@@ -155,7 +159,7 @@ int main(int argc, char *argv[]) {
     
     for (float y = -1.0; y < 1.0; y += 2.0 / height) {
         for (float x = -1.0; x < 1.0; x += 2.0 / width) {
-            D = vec3(x, 0.0, y) - C;
+            D = vec3(x, 0.0, y) + C;
             _main();
             
             float a = clamp(gl_FragColor.a, 0, 1);
@@ -164,7 +168,6 @@ int main(int argc, char *argv[]) {
             int b = clamp(gl_FragColor.b * 255, 0, 255) * a - 255 * (a - 1);
             
             std::cout << r << " " << g << " " << b << " ";
-            //std::cout << b << " " << g << " " << r << " ";
         }
         std::cout << std::endl;
     }
