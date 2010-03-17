@@ -1,3 +1,4 @@
+// emulate GLSL on the CPU since this is getting ridiculous
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -151,6 +152,7 @@ int main(int argc, char *argv[]) {
     std::cin >> width;
     std::cin >> height;
     
+    // render shader output to PPM
     std::cout << "P3" << std::endl;
     std::cout << width << " " << height << std::endl;
     std::cout << 255 << std::endl;

@@ -1,8 +1,8 @@
-#include "emulate.cpp"
-
 #ifdef GPU
 uniform vec3 C;
 varying vec3 D;
+#else
+#include "emulate.cpp"
 #endif
 
 #define X(T) (C.x + T * D.x)
@@ -20,31 +20,39 @@ varying vec3 D;
 
 void main() {
     // P(t) = C + t * D, t >= 0
-    float xn_a, xn_b = 0.0;
-    
     // find an interval for the secant method
-    // first look for the closest sign change
     
-    // by increasing in powers of two
-    xn_b = surface(C,D,0.0);
-    for (float t = 1.0; t <= 64.0; t *= 2.0) {
-        xn_a = surface(C,D,t);
-        int a = xn_a > 0;
-        int b = xn_b > 0;
-        if ((a > 0 && b < 0) || (a < 0 && b > 0)) break;
-        xn_b = xn_a;
+    //std::cerr << "--------------------" << std::endl;
+    // find nearest sign change with increasing multiples of two
+    // probably should use some smaller multiple
+    float t_low = 0.0, t_high = 1.0;
+    int sign = surface(C,D,t_low);
+    for (; t_high <= 64.0; t_high *= 2.0) {
+        int a = surface(C,D,t_high) > 0;
+        int b = sign > 0;
+        if ((a && !b) || (!a && b)) break;
+        t_low = t_high;
     }
-    //std::cerr << xn_a << "," << xn_b << std::endl;
+    //std::cerr << t_low << "," << t_high << std::endl;
     
-    // then binary search on that interval to a fixed depth
-    for (float t = xn_b; t <= 0.1; t = 0.5 * (xn_a + xn_b)) {
-        xn_a = surface(C,D,t);
-        int a = xn_a > 0;
-        int b = xn_b > 0;
-        if ((a > 0 && b < 0) || (a < 0 && b > 0)) break;
-        xn_b = xn_a;
+    // then binary search on that interval to a fixed resolution
+    while (t_high - t_low > 0.1) {
+        float mid = 0.5 * (t_high + t_low);
+        float mid_a = 0.5 * (t_high + t_low) + 0.01;
+        float mid_b = 0.5 * (t_high + t_low) - 0.01;
+        
+        // follow lower side
+        if (surface(C,D,mid_a) > surface(C,D,mid_b)) {
+            t_high = mid;
+        }
+        else {
+            t_low = mid;
+        }
     }
-    //std::cerr << xn_a << "," << xn_b << std::endl;
+    //std::cerr << t_low << "," << t_high << std::endl;
+    
+    float xn_a = surface(C,D,t_high);
+    float xn_b = surface(C,D,t_low);
     
     // use the secant method on this interval
     const float epsilon = 0.01;
