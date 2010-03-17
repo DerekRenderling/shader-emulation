@@ -138,27 +138,35 @@ static vec4 gl_FragColor;
 static vec3 C, D;
 void _main();
 
+float clamp(float x, float a, float b) {
+    return min(max(x,a),b);
+}
+
 int main(int argc, char *argv[]) {
     int width, height;
-    std::cin >> width >> height;
-    char *buf = new char[width * height * 4];
-    int i = 0;
+    std::cin >> width;
+    std::cin >> height;
+    
+    std::cout << "P3" << std::endl;
+    std::cout << width << " " << height << std::endl;
+    std::cout << 255 << std::endl;
     
     vec3 C = vec3(0.0,-5.0,0.0);
     
     for (float y = -1.0; y < 1.0; y += 2.0 / height) {
         for (float x = -1.0; x < 1.0; x += 2.0 / width) {
-            D = vec3(x, y, 0.0) - C;
+            D = vec3(x, 0.0, y) - C;
             _main();
-            buf[i] = * (unsigned char []) {
-                min(max(gl_FragColor.r * 256, 0), 255),
-                min(max(gl_FragColor.g * 256, 0), 255),
-                min(max(gl_FragColor.b * 256, 0), 255),
-                min(max(gl_FragColor.a * 256, 0), 255)
-            };
-            i += 4;
+            
+            float a = clamp(gl_FragColor.a, 0, 1);
+            int r = clamp(gl_FragColor.r * 255, 0, 255) * a - 255 * (a - 1);
+            int g = clamp(gl_FragColor.g * 255, 0, 255) * a - 255 * (a - 1);
+            int b = clamp(gl_FragColor.b * 255, 0, 255) * a - 255 * (a - 1);
+            
+            std::cout << r << " " << g << " " << b << " ";
+            //std::cout << b << " " << g << " " << r << " ";
         }
-        fwrite(buf, sizeof(char) * 4, width, stdout);
+        std::cout << std::endl;
     }
 }
 

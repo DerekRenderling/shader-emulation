@@ -99,7 +99,7 @@ display state = do
     loadIdentity
     let prog = simProg state
     bindProgram prog "C" (cameraPos state)
-    --bindProgram prog "D" (cameraDir state)
+    bindProgram prog "D0" (cameraDir state)
     
     withProgram prog $ renderPrimitive Quads $ do
         color $ Color3 1 1 (1 :: GLfloat)

@@ -23,9 +23,21 @@ void main() {
     // P(t) = C + t * D, t >= 0
     float xn_a, xn_b = 0.0;
     
-    // look from the camera outwards for a sign change
+    // find an interval for the secant method
+    // first look for the closest sign change
+    
+    // by increasing in powers of two
     xn_b = surface(C,D,0.0);
-    for (float t = 1.0; t += 1.0; t < 10.0 ) {
+    for (float t = 1.0; t <= 64.0; t *= 2.0) {
+        xn_a = surface(C,D,t);
+        int a = xn_a > 0;
+        int b = xn_b > 0;
+        if ((a > 0 && b < 0) || (a < 0 && b > 0)) break;
+        xn_b = xn_a;
+    }
+    
+    // then binary search on that interval to a fixed depth
+    for (float t = xn_b; t <= 0.1; t = 0.5 * (xn_a + xn_b)) {
         xn_a = surface(C,D,t);
         int a = xn_a > 0;
         int b = xn_b > 0;
@@ -50,8 +62,6 @@ void main() {
     }
     else {
         vec3 point = C + xn_a * D; // point of intersection
-        //vec4 proj = gl_ProjectionMatrix * vec4(vec3(point),1.0);
-        //gl_FragDepth = 0.1; // 0.5 + 0.5 * (proj.z / proj.w);
         gl_FragColor = vec4(1.0,0.0,0.0,1.0);
     }
 }
