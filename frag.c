@@ -9,14 +9,16 @@ varying vec3 D;
 #define Y(T) (C.y - T * D.y)
 #define Z(T) (C.z - T * D.z)
 
-#define sphere(C,D,T) \
+#define sphere(T) \
     X(T) * X(T) + Y(T) * Y(T) + Z(T) * Z(T) - 1.0
 
-#define torus(C,D,T) \
+#define torus(T) \
     pow(1 - sqrt(X(T)*X(T) + Y(T)*Y(T)), 2) + Z(T)*Z(T) - 0.1
 
-#define surface(C,D,T) \
-    sphere(C,D,T)
+#define hyperboloid1(T) X(T)*X(T) + Y(T)*Y(T) - Z(T)*Z(T) - 1.0
+#define hyperboloid2(T) -X(T)*X(T) - Y(T)*Y(T) + Z(T)*Z(T) - 1.0
+
+#define surface(T) hyperboloid2(T)
 
 void main() {
     // P(t) = C + t * D, t >= 0
@@ -25,15 +27,15 @@ void main() {
     float t_low = 0.0;
     float t_high = 1.0;
     
-    float xn_a = t_high; // surface(C,D,t_high);
-    float xn_b = t_low; // surface(C,D,t_low);
+    float xn_a = t_high;
+    float xn_b = t_low;
     
     // use the secant method on this interval
     const float epsilon = 0.0001;
     float d;
     for (int i = 0; i < 10; i++) {
-        float f_a = surface(C,D,xn_a);
-        float f_b = surface(C,D,xn_b);
+        float f_a = surface(xn_a);
+        float f_b = surface(xn_b);
         d = (xn_a - xn_b) / (f_a - f_b) * f_a;
         if (abs(f_a-f_b) < epsilon) break; // found an acceptable root
         xn_b = xn_a;
