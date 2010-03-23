@@ -109,8 +109,16 @@ std::ostream & operator<<(std::ostream & os, vec3 & v) {
     return os << v.to_s();
 }
 
+std::ostream & operator<<(std::ostream & os, const vec3 & v) {
+    return os << vec3(v).to_s();
+}
+
 std::ostream & operator<<(std::ostream & os, vec4 & v) {
     return os << v.to_s();
+}
+
+std::ostream & operator<<(std::ostream & os, const vec4 & v) {
+    return os << vec4(v).to_s();
 }
 
 std::istream & operator>>(std::istream & is, vec3 & v) {
@@ -173,7 +181,7 @@ int main(int argc, char *argv[]) {
     std::cout << width << " " << height << std::endl;
     std::cout << 255 << std::endl;
     
-    C = vec3(0.0,-4.0,0.0);
+    C = vec3(0.0,-5.0,0.0);
     
     for (float y = -1.0; y < 1.0-0.0001; y += 2.0 / height) {
         for (float x = -1.0; x < 1.0-0.0001; x += 2.0 / width) {
