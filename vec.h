@@ -1,4 +1,5 @@
 #ifndef VEC_H
+#define VEC_H
 #include <iostream>
 #include <sstream>
 #include <cstdio>
@@ -24,6 +25,16 @@ struct vec3 {
     
     vec3(const vec3 & v) {
         x = v.x; y = v.y; z = v.z;
+    }
+    
+    float & operator[](int i) {
+        switch (i) {
+            case 0 : return x;
+            case 1 : return y;
+            case 2 : return z;
+        }
+        std::cerr << "Out of bounds index " << i << " on vec3" <<std::endl;
+        return (*this)[i % 3];
     }
     
     std::string to_s() {
@@ -58,6 +69,17 @@ struct vec4 {
     
     vec4(const vec3 & v, float f) {
         x = v.x; y = v.y; z = v.z; w = f;
+    }
+    
+    float & operator[](int i) {
+        switch (i) {
+            case 0 : return x;
+            case 1 : return y;
+            case 2 : return z;
+            case 3 : return w;
+        }
+        std::cerr << "Out of bounds index " << i << " on vec4" <<std::endl;
+        return (*this)[i % 4];
     }
     
     std::string to_s() {
@@ -136,4 +158,29 @@ std::istream & operator>>(std::istream & is, vec4 & v) {
     v.x = x; v.y = y; v.z = z; v.w = w;
     return is;
 }
+
+float length(vec3 v) {
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+float length(vec4 v) {
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
+}
+
+float dot(vec3 a, vec3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+float dot(vec4 a, vec4 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+vec3 normalize(vec3 v) {
+    return v / length(v);
+}
+
+vec4 normalize(vec4 v) {
+    return v / length(v);
+}
+
 #endif
