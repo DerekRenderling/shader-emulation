@@ -30,7 +30,7 @@ void main() {
     // probably should use some smaller multiple
     float t_low = 0.0, t_high = 1.0;
     float sign = surface(C,D,t_low);
-    for (; t_high <= 64.0; t_high *= 2.0) {
+    for (; t_high <= 64.0; t_high *= 1.01) {
         int a = surface(C,D,t_high) > 0;
         int b = sign > 0;
         

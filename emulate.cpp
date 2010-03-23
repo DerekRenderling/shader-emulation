@@ -20,13 +20,11 @@ int main(int argc, char *argv[]) {
     std::cout << width << " " << height << std::endl;
     std::cout << 255 << std::endl;
     
-    // side view
-    vec3 dir = vec3(0.0,-1.0,0.0);
-    C = vec3(0,3,0);
+    C = vec3(0,-3,1);
     
-    for (float y = -1.0; y < 1.0-0.0001; y += 2.0 / height) {
-        for (float x = -1.0; x < 1.0-0.0001; x += 2.0 / width) {
-            D = normalize(vec3(-x,1.0,-y) - dir);
+    for (float y = -1.0; y < 1.0 - 0.0001; y += 2.0 / height) {
+        for (float x = -1.0; x < 1.0 - 0.0001; x += 2.0 / width) {
+            D = normalize(vec3(x,-1,y));
             _main();
             
             float a = clamp(gl_FragColor.a, 0, 1);
