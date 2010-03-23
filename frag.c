@@ -5,9 +5,9 @@ uniform vec3 C;
 varying vec3 D;
 #endif
 
-#define X(T) (C.x + T * D.x)
-#define Y(T) (C.y + T * D.y)
-#define Z(T) (C.z + T * D.z)
+#define X(T) (C.x - T * D.x)
+#define Y(T) (C.y - T * D.y)
+#define Z(T) (C.z - T * D.z)
 
 #define sphere(C,D,T) \
     X(T) * X(T) + Y(T) * Y(T) + Z(T) * Z(T) - 1.0
