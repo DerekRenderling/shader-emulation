@@ -9,21 +9,14 @@ varying vec3 D;
 #define Y(T) (C.y - T * D.y)
 #define Z(T) (C.z - T * D.z)
 
-#define sphere(T) \
-    X(T) * X(T) + Y(T) * Y(T) + Z(T) * Z(T) - 1.0
+#include "geom.h"
 
-#define torus(T) \
-    pow(1 - sqrt(X(T)*X(T) + Y(T)*Y(T)), 2) + Z(T)*Z(T) - 0.1
-
-#define hyperboloid1(T) X(T)*X(T) + Y(T)*Y(T) - Z(T)*Z(T) - 1.0
-#define hyperboloid2(T) -X(T)*X(T) - Y(T)*Y(T) + Z(T)*Z(T) - 1.0
-
-#define surface(T) hyperboloid2(T)
+#define surface(T) torus(T)
 
 void main() {
     // P(t) = C + t * D, t >= 0
-    // find an interval for the secant method
     
+    // this interval is pretty much good enough!
     float t_low = 0.0;
     float t_high = 1.0;
     
