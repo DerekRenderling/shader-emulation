@@ -13,7 +13,7 @@ varying vec3 D;
     X(T) * X(T) + Y(T) * Y(T) + Z(T) * Z(T) - 1.0
 
 #define torus(C,D,T) \
-    pow(1 - sqrt(X(T)*X(T) + Z(T)*Z(T)), 2) + Y(T)*Y(T) - 0.1
+    pow(1 - sqrt(X(T)*X(T) + Y(T)*Y(T)), 2) + Z(T)*Z(T) - 0.1
 
 #define surface(C,D,T) \
     torus(C,D,T)
