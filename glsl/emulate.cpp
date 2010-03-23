@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     
     for (float y = -1.0; y < 1.0 - 0.0001; y += 2.0 / height) {
         for (float x = -1.0; x < 1.0 - 0.0001; x += 2.0 / width) {
-            //D = normalize(vec3(x,-1,y));
+            D = normalize(vec3(x,-1,y));
             D = normalize(vec3(x,y,1));
             _main();
             
