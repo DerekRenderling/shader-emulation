@@ -11,3 +11,6 @@ frag:
 
 demo:
 	@echo 400 300 | ./frag > im.ppm; eog im.ppm 
+
+shader:
+	ghc --make sim/Main.hs sim/Shader.hs -o Main

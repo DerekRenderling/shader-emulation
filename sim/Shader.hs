@@ -1,16 +1,26 @@
 module Shader (
-    newProgram, withProgram, bindProgram, bindvProgram
+    Sources(..),
+    newProgram, newFromFiles, withProgram, bindProgram, bindvProgram
 ) where
 import Graphics.UI.GLUT
 import Control.Monad (when,unless)
 import Data.Maybe (isJust,fromJust)
 import Foreign (Ptr)
+import qualified Language.Preprocessor.Cpphs as C
 
--- create a program from vertex and fragment shader sources
-newProgram :: String -> String -> IO Program
-newProgram vertexSrc fragSrc = do
-    vShader <- compile vertexSrc
-    fShader <- compile fragSrc
+data Sources = Sources {
+    vFile :: FilePath,
+    fFile :: FilePath,
+    sourceOpts :: C.BoolOptions,
+    sourceSearch :: [FilePath], -- search paths for #include
+    sourceDefs :: [(String,String)] -- pre-defined values
+}
+
+-- create a program from sources and options
+newProgram :: Sources -> IO Program
+newProgram sources = do
+    vShader <- compile (vFile sources) sources
+    fShader <- compile (fFile sources) sources
     
     [prog] <- genObjectNames 1
     attachedShaders prog $= ([vShader], [fShader])
@@ -21,6 +31,20 @@ newProgram vertexSrc fragSrc = do
         putStrLn =<< (get $ programInfoLog prog)
         exitApp "Shader failed to compile"
     return prog
+
+-- create a program from vertex and fragment files and default options
+newFromFiles :: FilePath -> FilePath -> IO Program
+newFromFiles = (newProgram .) . useFiles
+
+useFiles :: FilePath -> FilePath -> Sources
+useFiles v f =
+    Sources {
+        vFile = v,
+        fFile = f,
+        sourceOpts = C.defaultBoolOptions { C.locations = False },
+        sourceSearch = ["."],
+        sourceDefs = []
+    }
 
 -- bind uniform variables to a program object
 bindProgram :: Uniform a => Program -> String -> a -> IO ()
@@ -44,10 +68,15 @@ withProgram prog m = do
     currentProgram $= Nothing
 
 -- compile a shader from source (hidden)
-compile :: Shader s => String -> IO s
-compile src = do
+compile :: Shader s => FilePath -> Sources -> IO s
+compile srcFile sources = do
     [shader] <- genObjectNames 1
-    shaderSource shader $= [src]
+    (shaderSource shader $=) . (:[])
+        =<< C.macroPass [] (sourceOpts sources)
+        =<< C.cppIfdef srcFile
+            [] [".","./glsl"] (sourceOpts sources)
+        =<< readFile srcFile
+    
     compileShader shader
     reportErrors
     ok <- get $ compileStatus shader

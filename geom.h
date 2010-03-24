@@ -1,3 +1,6 @@
+// excellent site for these things:
+// http://iat.ubalt.edu/summers/math/platsol.htm
+
 #define sphere(T) \
     X(T) * X(T) + Y(T) * Y(T) + Z(T) * Z(T) - 1.0
 
@@ -10,5 +13,5 @@
 #define hyperboloid2(T) \
     -X(T)*X(T) - Y(T)*Y(T) + Z(T)*Z(T) - 1.0
 
-#define wavy(T) \
+#define screw(T) \
     0.5 * sin(X(T)) + sqrt(Y(T)*Y(T) + Z(T)*Z(T)) - 1.5

@@ -10,7 +10,6 @@ varying vec3 D;
 #define Z(T) (C.z - T * D.z)
 
 #include "geom.h"
-
 #define surface(T) torus(T)
 
 void main() {

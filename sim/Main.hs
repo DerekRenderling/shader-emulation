@@ -28,10 +28,10 @@ main = do
     depthMask $= Enabled
     lighting $= Disabled
     
-    prog <- join $ liftM2 newProgram (readFile "vert.c") (readFile "frag.c")
+    prog <- newFromFiles "vert.c" "frag.c"
     stateVar <- newMVar $ State {
-        cameraPos = Vertex3 0 (-5) 0,
-        cameraDir = Vertex3 0 0 1,
+        cameraPos = Vertex3 0 (-3) 0,
+        cameraDir = Vertex3 0 (-1) 0,
         keySet = Set.empty,
         mousePos = (0,0),
         simProg = prog
@@ -59,9 +59,10 @@ onKeyUp :: State -> Key -> IO State
 onKeyUp state key = return state
 
 onKeyDown :: State -> Key -> IO State
-onKeyDown state (Char ' ') = do
-    print state
-    return state
+onKeyDown state (Char '\27') =
+    leaveMainLoop >> return state
+onKeyDown state (Char ' ') =
+    print state >> return state
 onKeyDown state key = return state
 
 keyboard :: State -> Key -> KeyState -> Modifiers -> Position -> State
@@ -99,7 +100,6 @@ display state = do
     loadIdentity
     let prog = simProg state
     bindProgram prog "C" (cameraPos state)
-    bindProgram prog "D0" (cameraDir state)
     
     withProgram prog $ renderPrimitive Quads $ do
         color $ Color3 1 1 (1 :: GLfloat)
