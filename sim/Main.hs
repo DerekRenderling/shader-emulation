@@ -5,7 +5,9 @@ import qualified Data.Set as Set
 
 import Control.Applicative ((<$>),(<*>))
 import Control.Arrow (first,(&&&))
-import Control.Monad (liftM2,join)
+import Control.Monad (liftM2,join,when)
+import Control.Monad.Error (runErrorT)
+import Data.Maybe (fromJust,isJust)
 
 import Shader
 import Util
@@ -15,7 +17,8 @@ data State = State {
     cameraDir :: Vertex3 GLfloat,
     keySet :: Set.Set Key,
     mousePos :: (Int,Int),
-    simProg :: Program
+    simProg :: Maybe Program,
+    simCPU :: Bool
 } deriving Show
 
 main :: IO ()
@@ -28,13 +31,17 @@ main = do
     depthMask $= Enabled
     lighting $= Disabled
     
-    prog <- newFromFiles "vert.c" "frag.c"
+    prog <- (runErrorT (newFromFiles "vert.c" "frag.c") >>=) $ \p -> case p of
+        Left msg -> putStrLn msg >> return Nothing
+        Right prog -> return $ Just prog
+    
     stateVar <- newMVar $ State {
         cameraPos = Vertex3 0 (-3) 0,
         cameraDir = Vertex3 0 (-1) 0,
         keySet = Set.empty,
         mousePos = (0,0),
-        simProg = prog
+        simProg = prog,
+        simCPU = elem "--cpu" argv
     }
     
     actionOnWindowClose $= MainLoopReturns
@@ -56,13 +63,31 @@ main = do
     mainLoop
 
 onKeyUp :: State -> Key -> IO State
+
+-- print the state
+onKeyUp state (Char ' ') =
+    print state >> return state
+
+-- recompile the shaders
+onKeyUp state (Char 'r') =
+    (runErrorT (newFromFiles "vert.c" "frag.c") >>=) $ \p -> case p of
+        Left msg -> putStrLn msg >> return state
+        Right prog -> do
+            putStrLn "Recompiled for the GPU"
+            return $ state { simProg = Just prog }
+
+-- toggle cpu mode
+onKeyUp state (Char 'c') = do
+    let cpu = simCPU state
+    print . ("Switched to " ++) . (++ " mode")
+        $ if cpu then "CPU" else "GPU"
+    return $ state { simCPU = not cpu }
+
 onKeyUp state key = return state
 
 onKeyDown :: State -> Key -> IO State
 onKeyDown state (Char '\27') =
     leaveMainLoop >> return state
-onKeyDown state (Char ' ') =
-    print state >> return state
 onKeyDown state key = return state
 
 keyboard :: State -> Key -> KeyState -> Modifiers -> Position -> State
@@ -98,16 +123,18 @@ display state = do
     clear [ ColorBuffer ]
     
     loadIdentity
-    let prog = simProg state
     
-    withProgram prog $ renderPrimitive Quads $ do
-        bindProgram prog "C" (cameraPos state)
-        color $ Color3 1 1 (1 :: GLfloat)
-        mapM_ vertex [
-                Vertex3 (-1) 1 0, Vertex3 1 1 0,
-                Vertex3 1 (-1) 0, Vertex3 (-1) (-1) 0
-                :: Vertex3 GLfloat
-            ]
+    let mProg = simProg state
+    when (isJust mProg) $ do
+        let prog = fromJust mProg
+        withProgram prog $ renderPrimitive Quads $ do
+            bindProgram prog "C" (cameraPos state)
+            color $ Color3 1 1 (1 :: GLfloat)
+            mapM_ vertex [
+                    Vertex3 (-1) 1 0, Vertex3 1 1 0,
+                    Vertex3 1 (-1) 0, Vertex3 (-1) (-1) 0
+                    :: Vertex3 GLfloat
+                ]
     
     flush
     swapBuffers

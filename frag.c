@@ -17,7 +17,7 @@ void main() {
     float xn_b = t_low;
     
     // use the secant method on this interval
-    const float epsilon = 0.00025;
+    const float epsilon = 0.00027;
     float d;
     for (int i = 0; i < 10; i++) {
         float f_a = surface(xn_a);

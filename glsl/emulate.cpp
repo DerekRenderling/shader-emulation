@@ -15,10 +15,12 @@ int main(int argc, char *argv[]) {
     std::cin >> width;
     std::cin >> height;
     
+    /*
     // render shader output to pbm (http://en.wikipedia.org/wiki/Netpbm_format)
     std::cout << "P3" << std::endl;
     std::cout << width << " " << height << std::endl;
     std::cout << 255 << std::endl;
+    */
     
     //C = vec3(0,-3,0);
     C = vec3(0,-1,3);

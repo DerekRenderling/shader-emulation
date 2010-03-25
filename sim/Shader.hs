@@ -7,6 +7,8 @@ import Control.Monad (when,unless)
 import Data.Maybe (isJust,fromJust)
 import Foreign (Ptr)
 import qualified Language.Preprocessor.Cpphs as C
+import Control.Applicative ((<$>))
+import Control.Monad.Error (ErrorT,throwError,liftIO)
 
 data Sources = Sources {
     vFile :: FilePath,
@@ -16,24 +18,29 @@ data Sources = Sources {
     sourceDefs :: [(String,String)] -- pre-defined values
 }
 
+type ShaderT = ErrorT String IO
+
 -- create a program from sources and options
-newProgram :: Sources -> IO Program
+newProgram :: Sources -> ShaderT Program
 newProgram sources = do
     vShader <- compile (vFile sources) sources
     fShader <- compile (fFile sources) sources
     
-    [prog] <- genObjectNames 1
-    attachedShaders prog $= ([vShader], [fShader])
-    linkProgram prog
-    reportErrors
-    ok <- get $ linkStatus prog
-    unless ok $ do
-        putStrLn =<< (get $ programInfoLog prog)
-        exitApp "Shader failed to compile"
-    return prog
+    prog <- liftIO $ do
+        [prog'] <- genObjectNames 1
+        attachedShaders prog' $= ([vShader], [fShader])
+        linkProgram prog'
+        -- reportErrors
+        return prog'
+    
+    ((liftIO $ get $ linkStatus prog) >>=) $ \ok -> if ok
+        then return prog
+        else (throwError =<<)
+            $ ((++ "\nFailed to link program.\n") <$>)
+            $ liftIO (get $ programInfoLog prog)
 
 -- create a program from vertex and fragment files and default options
-newFromFiles :: FilePath -> FilePath -> IO Program
+newFromFiles :: FilePath -> FilePath -> ShaderT Program
 newFromFiles = (newProgram .) . useFiles
 
 useFiles :: FilePath -> FilePath -> Sources
@@ -68,27 +75,21 @@ withProgram prog m = do
     currentProgram $= Nothing
 
 -- compile a shader from source (hidden)
-compile :: Shader s => FilePath -> Sources -> IO s
+compile :: Shader s => FilePath -> Sources -> ShaderT s
 compile srcFile sources = do
-    [shader] <- genObjectNames 1
-    (shaderSource shader $=) . (:[])
-        =<< C.macroPass [] (sourceOpts sources)
-        =<< C.cppIfdef srcFile
-            [] [".","./glsl"] (sourceOpts sources)
-        =<< readFile srcFile
+    shader <- liftIO $ do
+        [sh] <- genObjectNames 1
+        (shaderSource sh $=) . (:[])
+            =<< C.macroPass [] (sourceOpts sources)
+            =<< C.cppIfdef srcFile
+                [] [".","./glsl"] (sourceOpts sources)
+            =<< readFile srcFile
+        compileShader sh
+        -- reportErrors
+        return sh
     
-    compileShader shader
-    reportErrors
-    ok <- get $ compileStatus shader
-    unless ok $ do
-        putStrLn =<< (get $ shaderInfoLog shader)
-        exitApp "Shader failed to compile"
-    return shader
-
--- exit opengl app (hidden)
-exitApp :: String -> IO ()
-exitApp msg = do
-    leaveMainLoop
-    win <- get currentWindow
-    when (isJust win) $ destroyWindow (fromJust win)
-    fail msg
+    ((liftIO $ get $ compileStatus shader) >>=) $ \ok -> if ok
+        then return shader
+        else (throwError =<<)
+            $ (((++ "\nIn file: " ++ srcFile ++ "\n")) <$>)
+            $ liftIO (get $ shaderInfoLog shader)
