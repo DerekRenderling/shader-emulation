@@ -57,9 +57,13 @@ main = do
         state <- display =<< takeMVar stateVar
         putMVar stateVar state
         return ()
-    (reshapeCallback $=) . Just $ \size -> do
+    (reshapeCallback $=) . Just $ \size@(Size w h) -> do
         viewport $= (Position 0 0, size)
+        matrixMode $= Projection
         loadIdentity
+        let as = fromIntegral w / fromIntegral h
+            sa = recip as
+        ortho (-as) as (-1.0) 1.0 0.0 10000.0
     mainLoop
 
 onKeyUp :: State -> Key -> IO State
@@ -117,6 +121,16 @@ display state = do
     clearColor $= Color4 0 0 0 1
     clear [ ColorBuffer ]
     
+    {-
+    Size w h <- get windowSize
+    let as = fromIntegral w / fromIntegral h
+    
+    matrixMode $= Projection
+    loadIdentity
+    perspective 90 as 0 100000
+    -}
+    
+    matrixMode $= Modelview 0
     loadIdentity
     
     if simCPU state
@@ -138,9 +152,9 @@ runGPU State{ simProg = Just prog, cameraPos = pos } =
 runGPU _ = return ()
 
 quadScreen :: IO ()
-quadScreen = mapM_ vertex
-    [
-        Vertex3 (-1) 1 0, Vertex3 1 1 0,
-        Vertex3 1 (-1) 0, Vertex3 (-1) (-1) 0
-        :: Vertex3 GLfloat
-    ]
+quadScreen = do
+    Size w h <- get windowSize
+    let
+        as = fromIntegral w / fromIntegral h
+        xy = [(-as,1),(as,1),(as,-1),(-as,-1)] :: [(GLfloat,GLfloat)]
+    mapM_ vertex [ Vertex3 x y 0 | (x,y) <- xy ]

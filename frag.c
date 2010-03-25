@@ -17,7 +17,9 @@ void main() {
     float xn_b = t_low;
     
     // use the secant method on this interval
-    const float epsilon = 0.00027;
+    const float epsilon = 0.00027; // sphere
+    //const float epsilon = 0.003; // hyperboloid1
+    //const float epsilon = 0.008; // hyperboloid2
     float d;
     for (int i = 0; i < 10; i++) {
         float f_a = surface(xn_a);
