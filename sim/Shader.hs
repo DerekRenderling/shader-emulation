@@ -3,7 +3,6 @@ module Shader (
     newProgram, newFromFiles, withProgram, bindProgram, bindvProgram
 ) where
 import Graphics.UI.GLUT
-import Control.Monad (when,unless)
 import Data.Maybe (isJust,fromJust)
 import Foreign (Ptr)
 import qualified Language.Preprocessor.Cpphs as C

@@ -5,7 +5,7 @@ import qualified Data.Set as Set
 
 import Control.Applicative ((<$>),(<*>))
 import Control.Arrow (first,(&&&))
-import Control.Monad (liftM2,join,when)
+import Control.Monad (when)
 import Control.Monad.Error (runErrorT)
 import Data.Maybe (fromJust,isJust)
 
@@ -63,11 +63,8 @@ main = do
     mainLoop
 
 onKeyUp :: State -> Key -> IO State
-
 -- print the state
-onKeyUp state (Char ' ') =
-    print state >> return state
-
+onKeyUp state (Char ' ') = print state >> return state
 -- recompile the shaders
 onKeyUp state (Char 'r') =
     (runErrorT (newFromFiles "vert.c" "frag.c") >>=) $ \p -> case p of
@@ -75,19 +72,17 @@ onKeyUp state (Char 'r') =
         Right prog -> do
             putStrLn "Recompiled for the GPU"
             return $ state { simProg = Just prog }
-
 -- toggle cpu mode
 onKeyUp state (Char 'c') = do
     let cpu = simCPU state
     print . ("Switched to " ++) . (++ " mode")
-        $ if cpu then "CPU" else "GPU"
+        $ if cpu then "GPU" else "CPU"
     return $ state { simCPU = not cpu }
-
 onKeyUp state key = return state
 
 onKeyDown :: State -> Key -> IO State
-onKeyDown state (Char '\27') =
-    leaveMainLoop >> return state
+-- escape key exits application
+onKeyDown state (Char '\27') = leaveMainLoop >> return state
 onKeyDown state key = return state
 
 keyboard :: State -> Key -> KeyState -> Modifiers -> Position -> State
@@ -124,20 +119,28 @@ display state = do
     
     loadIdentity
     
-    let mProg = simProg state
-    when (isJust mProg) $ do
-        let prog = fromJust mProg
-        withProgram prog $ renderPrimitive Quads $ do
-            bindProgram prog "C" (cameraPos state)
-            color $ Color3 1 1 (1 :: GLfloat)
-            mapM_ vertex [
-                    Vertex3 (-1) 1 0, Vertex3 1 1 0,
-                    Vertex3 1 (-1) 0, Vertex3 (-1) (-1) 0
-                    :: Vertex3 GLfloat
-                ]
+    if simCPU state
+        then return ()
+        else runGPU state
     
     flush
     swapBuffers
     postRedisplay Nothing
     
     return $ navigate state
+
+runGPU :: State -> IO ()
+runGPU State{ simProg = Just prog, cameraPos = pos } =
+    withProgram prog $ renderPrimitive Quads $ do
+        bindProgram prog "C" pos
+        color $ Color3 1 1 (1 :: GLfloat)
+        quadScreen
+runGPU _ = return ()
+
+quadScreen :: IO ()
+quadScreen = mapM_ vertex
+    [
+        Vertex3 (-1) 1 0, Vertex3 1 1 0,
+        Vertex3 1 (-1) 0, Vertex3 (-1) (-1) 0
+        :: Vertex3 GLfloat
+    ]

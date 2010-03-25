@@ -32,13 +32,13 @@ int main(int argc, char *argv[]) {
             _main();
             
             float a = clamp(gl_FragColor.a, 0, 1);
-            int r = clamp(gl_FragColor.r * 255, 0, 255) * a - 255 * (a - 1);
-            int g = clamp(gl_FragColor.g * 255, 0, 255) * a - 255 * (a - 1);
-            int b = clamp(gl_FragColor.b * 255, 0, 255) * a - 255 * (a - 1);
+            char r = clamp(gl_FragColor.r * 255, 0, 255) * a - 255 * (a - 1);
+            char g = clamp(gl_FragColor.g * 255, 0, 255) * a - 255 * (a - 1);
+            char b = clamp(gl_FragColor.b * 255, 0, 255) * a - 255 * (a - 1);
             
-            std::cout << r << " " << g << " " << b << " ";
+            //std::cout << r << " " << g << " " << b << " ";
+            std::cout << r << g << b;
         }
-        std::cout << std::endl;
     }
 }
 
