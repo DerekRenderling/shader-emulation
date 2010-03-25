@@ -6,7 +6,7 @@ varying vec3 D;
 #endif
 
 #include "geom.h"
-#define surface(T) XYZ(sphere,T)
+#define surface(T) XYZ(torus,T)
 
 void main() {
     // this interval is pretty much good enough!
@@ -17,11 +17,12 @@ void main() {
     float xn_b = t_low;
     
     // use the secant method on this interval
-    const float epsilon = 0.00027; // sphere
+    //const float epsilon = 0.00027; // sphere
     //const float epsilon = 0.003; // hyperboloid1
     //const float epsilon = 0.008; // hyperboloid2
+    const float epsilon = 0.001;
     float d;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 15; i++) {
         float f_a = surface(xn_a);
         float f_b = surface(xn_b);
         d = (xn_a - xn_b) / (f_a - f_b) * f_a;

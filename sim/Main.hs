@@ -106,12 +106,12 @@ navigate state = state { cameraPos = c', cameraDir = d' }
             _ -> foldl1 (.) actions
         actions = map snd
             $ filter (\(k,_) -> Set.member k (keySet state)) [
-                (Char 'w', first (plus (0,-ds,0))),
-                (Char 'a', first (plus (-ds,0,0))),
-                (Char 's', first (plus (0,ds,0))),
-                (Char 'd', first (plus (ds,0,0))),
-                (Char 'q', first (plus (0,0,ds))),
-                (Char 'z', first (plus (0,0,-ds)))
+                (Char 'w', first (plus (0,ds,0))),
+                (Char 'a', first (plus (ds,0,0))),
+                (Char 's', first (plus (0,-ds,0))),
+                (Char 'd', first (plus (-ds,0,0))),
+                (Char 'q', first (plus (0,0,-ds))),
+                (Char 'z', first (plus (0,0,ds)))
             ]
         ds = 0.1
         plus (x',y',z') (Vertex3 x y z) = Vertex3 (x+x') (y+y') (z+z')

@@ -7,6 +7,9 @@
     (C.z - (T) * D.z) \
 )
 
+// Intel GMA doesn't like the real sqrt
+#define sqrt(f) length(vec3(f,0.0,0.0))
+
 #define sphere(x,y,z) \
     x*x + y*y + z*z - 1.0
 
