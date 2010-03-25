@@ -6,18 +6,18 @@ varying vec3 D;
 #endif
 
 #include "geom.h"
-#define surface(T) sphere(T)
+#define surface(T) XYZ(sphere,T)
 
 void main() {
     // this interval is pretty much good enough!
     float t_low = 0.0;
-    float t_high = 1.0;
+    float t_high = 0.01;
     
     float xn_a = t_high;
     float xn_b = t_low;
     
     // use the secant method on this interval
-    const float epsilon = 0.0001;
+    const float epsilon = 0.00025;
     float d;
     for (int i = 0; i < 10; i++) {
         float f_a = surface(xn_a);
