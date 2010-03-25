@@ -99,9 +99,9 @@ display state = do
     
     loadIdentity
     let prog = simProg state
-    bindProgram prog "C" (cameraPos state)
     
     withProgram prog $ renderPrimitive Quads $ do
+        bindProgram prog "C" (cameraPos state)
         color $ Color3 1 1 (1 :: GLfloat)
         mapM_ vertex [
                 Vertex3 (-1) 1 0, Vertex3 1 1 0,
