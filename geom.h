@@ -1,8 +1,12 @@
 // excellent site for these things:
 // http://iat.ubalt.edu/summers/math/platsol.htm
 
+#define X(T) (C.x - T * D.x)
+#define Y(T) (C.y - T * D.y)
+#define Z(T) (C.z - T * D.z)
+
 #define sphere(T) \
-    X(T) * X(T) + Y(T) * Y(T) + Z(T) * Z(T) - 1.0
+    X(T)*X(T) + Y(T)*Y(T) + Z(T)*Z(T) - 1.0
 
 #define torus(T) \
     pow(1 - sqrt(X(T)*X(T) + Y(T)*Y(T)), 2) + Z(T)*Z(T) - 0.1

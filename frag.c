@@ -5,16 +5,10 @@ uniform vec3 C;
 varying vec3 D;
 #endif
 
-#define X(T) (C.x - T * D.x)
-#define Y(T) (C.y - T * D.y)
-#define Z(T) (C.z - T * D.z)
-
 #include "geom.h"
-#define surface(T) torus(T)
+#define surface(T) sphere(T)
 
 void main() {
-    // P(t) = C + t * D, t >= 0
-    
     // this interval is pretty much good enough!
     float t_low = 0.0;
     float t_high = 1.0;
