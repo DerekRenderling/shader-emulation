@@ -28,6 +28,7 @@ type CPUProgram = (PipeHandle, Handle, Handle)
 data Prog
     = GPU { gpuProg :: Program }
     | CPU { cpuProg :: CPUProgram }
+    deriving Show
 
 type ShaderT = ErrorT String IO
 

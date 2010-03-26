@@ -17,7 +17,7 @@ data State = State {
     cameraDir :: Vertex3 GLfloat,
     keySet :: Set.Set Key,
     mousePos :: (Int,Int),
-    simProg :: Maybe Program,
+    simGPU :: Maybe Prog,
     simCPU :: Bool
 } deriving Show
 
@@ -31,7 +31,7 @@ main = do
     depthMask $= Enabled
     lighting $= Disabled
     
-    prog <- (runErrorT (newFromFiles "vert.c" "frag.c") >>=) $ \p -> case p of
+    gpu <- (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
         Left msg -> putStrLn msg >> return Nothing
         Right prog -> return $ Just prog
     
@@ -40,8 +40,8 @@ main = do
         cameraDir = Vertex3 0 (-1) 0,
         keySet = Set.empty,
         mousePos = (0,0),
-        simProg = prog,
-        simCPU = elem "--cpu" argv
+        simGPU = gpu,
+        simCPU = False
     }
     
     actionOnWindowClose $= MainLoopReturns
@@ -71,15 +71,15 @@ onKeyUp :: State -> Key -> IO State
 onKeyUp state (Char ' ') = print state >> return state
 -- recompile the shaders
 onKeyUp state (Char 'r') =
-    (runErrorT (newFromFiles "vert.c" "frag.c") >>=) $ \p -> case p of
+    (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
         Left msg -> putStrLn msg >> return state
-        Right prog -> do
+        Right gpu -> do
             putStrLn "Recompiled for the GPU"
-            return $ state { simProg = Just prog }
+            return $ state { simGPU = Just gpu }
 -- toggle cpu mode
 onKeyUp state (Char 'c') = do
     let cpu = simCPU state
-    print . ("Switched to " ++) . (++ " mode")
+    putStrLn . ("Switched to " ++) . (++ " mode")
         $ if cpu then "GPU" else "CPU"
     return $ state { simCPU = not cpu }
 onKeyUp state key = return state
@@ -121,21 +121,10 @@ display state = do
     clearColor $= Color4 0 0 0 1
     clear [ ColorBuffer ]
     
-    {-
-    Size w h <- get windowSize
-    let as = fromIntegral w / fromIntegral h
-    
-    matrixMode $= Projection
-    loadIdentity
-    perspective 90 as 0 100000
-    -}
-    
     matrixMode $= Modelview 0
     loadIdentity
     
-    if simCPU state
-        then return ()
-        else runGPU state
+    runShader state
     
     flush
     swapBuffers
@@ -143,13 +132,18 @@ display state = do
     
     return $ navigate state
 
-runGPU :: State -> IO ()
-runGPU State{ simProg = Just prog, cameraPos = pos } =
-    withProgram prog $ renderPrimitive Quads $ do
-        bindProgram prog "C" pos
-        color $ Color3 1 1 (1 :: GLfloat)
-        quadScreen
-runGPU _ = return ()
+runShader :: State -> IO ()
+runShader state@State{ simCPU = cpu, cameraPos = pos } = do
+    mProg <- if cpu
+        then Just <$> newCPU "./frag" []
+        else return $ simGPU state
+    
+    when (isJust mProg) $ do
+        let prog = fromJust mProg
+        withProgram prog $ renderPrimitive Quads $ do
+            bindProgram prog "C" pos
+            color $ Color3 1 1 (1 :: GLfloat)
+            quadScreen
 
 quadScreen :: IO ()
 quadScreen = do

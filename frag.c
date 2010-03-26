@@ -1,17 +1,18 @@
 #ifdef CPU
-#include "emulate.cpp"
+#include "emulate.hpp"
 #else
 uniform vec3 C;
 varying vec3 D;
 #endif
 
 #include "geom.h"
-#define surface(T) XYZ(torus,T)
+#define geometry torus
+#define surface(T) XYZ(geometry,T)
 
 void main() {
     // this interval is pretty much good enough!
     float t_low = 0.0;
-    float t_high = 0.01;
+    float t_high = 1.0;
     
     float xn_a = t_high;
     float xn_b = t_low;
@@ -20,7 +21,7 @@ void main() {
     //const float epsilon = 0.00027; // sphere
     //const float epsilon = 0.003; // hyperboloid1
     //const float epsilon = 0.008; // hyperboloid2
-    const float epsilon = 0.001;
+    const float epsilon = 0.0001; // torus
     float d;
     for (int i = 0; i < 15; i++) {
         float f_a = surface(xn_a);
@@ -31,14 +32,16 @@ void main() {
         xn_a -= d;
     }
     
-    if (d != d) { // NaN
-        gl_FragColor = vec4(1.0,1.0,0.0,0.0);
-    }
-    else if (abs(d) > epsilon) {
-        gl_FragColor = vec4(0.0,1.0,0.0,1.0);
+    if (abs(d) > epsilon) {
+        gl_FragColor = vec4(0.5,0.5,0.5,1.0);
     }
     else {
-        vec3 point = C + t_high * D; // point of intersection
-        gl_FragColor = vec4(point.x,0.0,point.z,1.0);
+        float T = t_high;
+        vec3 P = C + T * D; // point of intersection
+        float dt = 0.01;
+        vec3 PX = P.x - (C - (geometry(P.x + dt, P.y, P.z) - T) * D);
+        
+        vec3 N = vec3(PX.x,0.0,0.0) * dt;
+        gl_FragColor = vec4(N,1.0);
     }
 }
