@@ -12,7 +12,7 @@ import Control.Applicative ((<$>))
 import Control.Monad.Error (ErrorT,throwError,liftIO)
 
 import System.Cmd.Utils (PipeHandle,hPipeBoth)
-import System.IO (Handle,hPrint,hPutStrLn,hGetBuf)
+import System.IO (Handle,hPrint,hGetBuf)
 
 data Sources = Sources {
     vFile :: FilePath,
@@ -21,7 +21,6 @@ data Sources = Sources {
     sourceSearch :: [FilePath], -- search paths for #include
     sourceDefs :: [(String,String)] -- pre-defined values
 }
-
 
 type CPUProgram = (PipeHandle, Handle, Handle)
 
@@ -63,7 +62,7 @@ newGPU' sources = do
 
 -- | Create an emulated shader from a command.
 -- The command should read (width,height) followed by the uniform parameters
--- line-by-line as key=value. Output should be raw RGB bytes on stdout.
+-- line-by-line. Output should be raw RGB bytes on stdout.
 newCPU :: FilePath -> [String] -> IO Prog
 newCPU cmd args = do
     cpu@(_,_,fh) <- hPipeBoth cmd args
@@ -78,7 +77,7 @@ bindProgram (GPU prog) key value = do
     reportErrors
     uniform location $= value
 bindProgram CPU{ cpuProg = (_,_,fh) } key value = do
-    hPutStrLn fh $ key ++ "=" ++ show value
+    hPrint fh value
 
 -- | Bind uniform variables to a program object
 bindvProgram :: Uniform a => Prog -> String -> Int -> Ptr a -> IO ()

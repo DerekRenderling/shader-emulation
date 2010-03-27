@@ -1,12 +1,12 @@
 #ifdef CPU
 #include "emulate.hpp"
 #else
-uniform vec3 C;
+varying vec3 C;
 varying vec3 D;
 #endif
 
 #include "geom.h"
-#define geometry torus
+#define geometry sphere
 #define surface(T) XYZ(geometry,T)
 
 void main() {

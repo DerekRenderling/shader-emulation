@@ -14,7 +14,7 @@ import Util
 
 data State = State {
     cameraPos :: Vertex3 GLfloat,
-    cameraDir :: Vertex3 GLfloat,
+    cameraDir :: Vertex2 GLfloat,
     keySet :: Set.Set Key,
     mousePos :: (Int,Int),
     simGPU :: Maybe Prog,
@@ -37,7 +37,7 @@ main = do
     
     stateVar <- newMVar $ State {
         cameraPos = Vertex3 0 (-3) 0,
-        cameraDir = Vertex3 0 (-1) 0,
+        cameraDir = Vertex2 0 0,
         keySet = Set.empty,
         mousePos = (0,0),
         simGPU = gpu,
@@ -98,9 +98,9 @@ keyboard state key keyState modifiers pos = state'
             Down -> Set.insert
 
 navigate :: State -> State
-navigate state = state { cameraPos = c', cameraDir = d' }
+navigate state@State{ cameraPos = c, cameraDir = d } = state'
     where
-        (c,d) = cameraPos &&& cameraDir $ state
+        state' = state { cameraPos = c', cameraDir = d' }
         (c',d') = ($ (c,d)) $ case actions of
             [] -> id
             _ -> foldl1 (.) actions
@@ -133,15 +133,16 @@ display state = do
     return $ navigate state
 
 runShader :: State -> IO ()
-runShader state@State{ simCPU = cpu, cameraPos = pos } = do
-    mProg <- if cpu
+runShader state = do
+    mProg <- if simCPU state
         then Just <$> newCPU "./frag" []
         else return $ simGPU state
     
     when (isJust mProg) $ do
         let prog = fromJust mProg
         withProgram prog $ renderPrimitive Quads $ do
-            bindProgram prog "C" pos
+            bindProgram prog "pos" (cameraPos state)
+            bindProgram prog "dir" (cameraDir state)
             color $ Color3 1 1 (1 :: GLfloat)
             quadScreen
 
