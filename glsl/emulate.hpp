@@ -25,6 +25,10 @@ int main(int argc, char *argv[]) {
     std::cin >> dir;
     dir = normalize(dir);
     
+    std::cerr << size << std::endl;
+    std::cerr << C << std::endl;
+    std::cerr << dir << std::endl;
+    
     float theta = atan2(dir.x,dir.z);
     float rho = atan2(dir.y,dir.z);
     

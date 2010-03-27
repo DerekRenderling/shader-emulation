@@ -11,8 +11,9 @@ import qualified Language.Preprocessor.Cpphs as C
 import Control.Applicative ((<$>))
 import Control.Monad.Error (ErrorT,throwError,liftIO)
 
+import Control.Concurrent.MVar
 import System.Cmd.Utils (PipeHandle,hPipeBoth)
-import System.IO (Handle,hPrint,hGetBuf)
+import System.IO (Handle,hPrint,hGetBuf,hFlush)
 
 data Sources = Sources {
     vFile :: FilePath,
@@ -26,8 +27,11 @@ type CPUProgram = (PipeHandle, Handle, Handle)
 
 data Prog
     = GPU { gpuProg :: Program }
-    | CPU { cpuProg :: CPUProgram }
-    deriving Show
+    | CPU { cpuProg :: CPUProgram, cpuVars :: MVar [String] }
+
+instance Show Prog where
+    show GPU{} = "GPU"
+    show CPU{} = "CPU"
 
 type ShaderT = ErrorT String IO
 
@@ -67,8 +71,8 @@ newCPU :: FilePath -> [String] -> IO Prog
 newCPU cmd args = do
     cpu@(_,_,fh) <- hPipeBoth cmd args
     Size w h <- get windowSize
-    hPrint fh (w,h)
-    return $ CPU cpu
+    vars <- newMVar [show (w,h)]
+    return $ CPU { cpuProg = cpu, cpuVars = vars }
 
 -- | Bind uniform variables to a program object
 bindProgram :: (Uniform a, Show a) => Prog -> String -> a -> IO ()
@@ -77,6 +81,7 @@ bindProgram (GPU prog) key value = do
     reportErrors
     uniform location $= value
 bindProgram CPU{ cpuProg = (_,_,fh) } key value = do
+    putStrLn $ show key ++ " = " ++ show value
     hPrint fh value
 
 -- | Bind uniform variables to a program object
@@ -97,8 +102,9 @@ withProgram CPU{ cpuProg = (_,rh,wh) } f = do
     size@(Size w h) <- get windowSize
     hPrint wh (w,h)
     ptr <- mallocBytes (fromIntegral $ 3 * w * h)
-    hGetBuf rh ptr (fromIntegral $ 3 * w * h)
-    withTexture2D size (PixelData RGB Byte ptr) f
+    withTexture2D size (PixelData RGB Byte ptr) $ do
+        f >> hFlush wh
+        hGetBuf rh ptr (fromIntegral $ w * h) >> f
 
 withTexture2D :: Size -> PixelData (Color3 GLubyte) -> IO () -> IO ()
 withTexture2D (Size w h) texData f = do

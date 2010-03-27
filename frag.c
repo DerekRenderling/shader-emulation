@@ -6,7 +6,7 @@ varying vec3 D;
 #endif
 
 #include "geom.h"
-#define geometry sphere
+#define geometry torus
 #define surface(T) XYZ(geometry,T)
 
 void main() {

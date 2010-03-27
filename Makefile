@@ -10,7 +10,8 @@ frag:
 	g++ -DCPU -O3 -Iglsl frag.c -o frag -fopenmp
 
 demo:
-	@echo 400 300 | ./frag ppm > im.ppm; eog im.ppm 
+	bash -c 'echo -e "(400,300)\n(0,-3,0)\n(0,-1,0)" | ./frag ppm > im.ppm'
+	eog im.ppm
 
 shader:
 	ghc --make sim/Main.hs sim/Shader.hs -o Main

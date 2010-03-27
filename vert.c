@@ -8,10 +8,11 @@ void main() {
     C = pos;
     // since the proxy geometry is just a screen placed in front of the camera:
     vec3 v = vec3(gl_Vertex.x, -1.0, gl_Vertex.y);
+    
     D = normalize(vec3(
-        v.x * cos(dir.x) + v.z * sin(dir.x),
-        v.y * cos(dir.y) + v.x * sin(dir.x),
-        v.y * sin(dir.y) + v.z * cos(dir.y)
+        v.x,
+        v.y,
+        v.z
     ));
     //D = normalize(vec3(gl_Vertex.x,-1.0,gl_Vertex.y));
 }
