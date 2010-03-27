@@ -4,7 +4,7 @@ import Control.Concurrent (newMVar,takeMVar,putMVar)
 import qualified Data.Set as Set
 
 import Control.Applicative ((<$>),(<*>))
-import Control.Arrow (first,(&&&))
+import Control.Arrow (first,second,(&&&))
 import Control.Monad (when)
 import Control.Monad.Error (runErrorT)
 import Data.Maybe (fromJust,isJust)
@@ -106,15 +106,21 @@ navigate state@State{ cameraPos = c, cameraDir = d } = state'
             _ -> foldl1 (.) actions
         actions = map snd
             $ filter (\(k,_) -> Set.member k (keySet state)) [
-                (Char 'w', first (plus (0,ds,0))),
-                (Char 'a', first (plus (ds,0,0))),
-                (Char 's', first (plus (0,-ds,0))),
-                (Char 'd', first (plus (-ds,0,0))),
-                (Char 'q', first (plus (0,0,-ds))),
-                (Char 'z', first (plus (0,0,ds)))
+                (Char 'w', first $ plus3 (0,dt,0)), -- forward
+                (Char 'a', first $ plus3 (dt,0,0)), -- left
+                (Char 's', first $ plus3 (0,-dt,0)), -- back
+                (Char 'd', first $ plus3 (-dt,0,0)), -- right
+                (Char 'q', first $ plus3 (0,0,-dt)), -- up
+                (Char 'z', first $ plus3 (0,0,dt)), -- down
+                (Char 'h', second $ plus2 (-dr,0)), -- turn left
+                (Char 'j', second $ plus2 (0,-dr)), -- turn down
+                (Char 'k', second $ plus2 (0,dr)), -- turn up
+                (Char 'l', second $ plus2 (dr,0)) -- turn right
             ]
-        ds = 0.1
-        plus (x',y',z') (Vertex3 x y z) = Vertex3 (x+x') (y+y') (z+z')
+        dt = 0.1
+        dr = 0.1
+        plus2 (x',y') (Vertex2 x y) = Vertex2 (x+x') (y+y')
+        plus3 (x',y',z') (Vertex3 x y z) = Vertex3 (x+x') (y+y') (z+z')
 
 display :: State -> IO State
 display state = do
