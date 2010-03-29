@@ -115,16 +115,22 @@ withProgram prog@CPU{ cpuProg = (_,rh,wh) } f = do
     size@(Size w h) <- get windowSize
     ptr <- mallocBytes (fromIntegral $ 3 * w * h)
     hGetBuf rh ptr (fromIntegral $ 3 * w * h)
-    withTexture2D size (PixelData RGB Byte ptr) f
+    withTexture2D size (PixelData RGB UnsignedByte ptr) f
 
 withTexture2D :: Size -> PixelData (Color3 GLubyte) -> IO () -> IO ()
 withTexture2D (Size w h) texData f = do
     -- save texture capability
     prevCap <- get $ texture Texture2D
+    shadeModel $= Flat
+    rowAlignment Unpack $= 1
     texture Texture2D $= Enabled
     
     [tex] <- genObjectNames 1
     textureBinding Texture2D $= Just tex
+    textureFunction $= Decal
+    textureWrapMode Texture2D S $= (Repeated, Repeat)
+    textureWrapMode Texture2D T $= (Repeated, Repeat)
+    textureFilter Texture2D $= ((Nearest, Nothing), Nearest)
     texImage2D
         Nothing -- not a cube map
         NoProxy -- standard texture 2d
@@ -136,7 +142,7 @@ withTexture2D (Size w h) texData f = do
     f -- user geometry
     
     -- set texture capability back to whatever it was before
-    texture Texture2D $= prevCap
+    --texture Texture2D $= prevCap
 
 -- compile a shader from source (hidden)
 compile :: Shader s => FilePath -> Sources -> ShaderT s

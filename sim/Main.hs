@@ -7,7 +7,7 @@ import Control.Applicative ((<$>),(<*>))
 import Control.Arrow (first,second,(&&&))
 import Control.Monad (when)
 import Control.Monad.Error (runErrorT)
-import Data.Maybe (fromJust,isJust)
+import Data.Maybe (fromJust,isJust,isNothing)
 
 import Shader
 import Util
@@ -31,9 +31,11 @@ main = do
     depthMask $= Enabled
     lighting $= Disabled
     
-    gpu <- (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
-        Left msg -> putStrLn msg >> return Nothing
-        Right prog -> return $ Just prog
+    gpu <- if case argv of { ("cpu":_) -> True; _ -> False }
+        then putStrLn "Using CPU emulation" >> return Nothing
+        else (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
+            Left msg -> putStrLn msg >> return Nothing
+            Right prog -> return $ Just prog
     
     stateVar <- newMVar $ State {
         cameraPos = Vertex3 0 (-3) 0,
@@ -41,10 +43,7 @@ main = do
         keySet = Set.empty,
         mousePos = (0,0),
         simGPU = gpu,
-        simCPU = case argv of
-            [] -> False
-            ("cpu":_) -> True
-            _ -> False
+        simCPU = isNothing gpu
     }
     
     actionOnWindowClose $= MainLoopReturns
@@ -152,7 +151,7 @@ runShader state = do
             (Vertex2 theta rho) = cameraDir state
         bindProgram prog "pos" $ cameraPos state
         bindProgram prog "dir"
-            $ Vertex3 (sin theta) (cos theta + cos rho) (sin rho)
+            $ Vertex3 (sin theta) (-1 * cos theta * cos rho) (sin rho)
         withProgram prog $ renderPrimitive Quads $ do
             color $ Color3 1 1 (1 :: GLfloat)
             quadScreen
