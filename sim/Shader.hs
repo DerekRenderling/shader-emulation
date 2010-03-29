@@ -1,15 +1,18 @@
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 module Shader (
     Sources(..), Prog(..),
     newGPU, newGPU', newCPU,
     withProgram, bindProgram, bindvProgram,
-    withTexture2D
+    withTexture2D, preprocess
 ) where
 import Graphics.UI.GLUT
 import Data.Maybe (isJust,fromJust)
-import Foreign (Ptr,mallocBytes)
+import Foreign (Ptr,mallocBytes,peekArray)
 import qualified Language.Preprocessor.Cpphs as C
 import Control.Applicative ((<$>))
 import Control.Monad.Error (ErrorT,throwError,liftIO)
+import Control.Monad (forM_)
+import Data.List (intersperse)
 
 import Control.Concurrent.MVar
 import System.Cmd.Utils (PipeHandle,hPipeBoth)
@@ -27,7 +30,7 @@ type CPUProgram = (PipeHandle, Handle, Handle)
 
 data Prog
     = GPU { gpuProg :: Program }
-    | CPU { cpuProg :: CPUProgram, cpuVars :: MVar [String] }
+    | CPU { cpuProg :: CPUProgram }
 
 instance Show Prog where
     show GPU{} = "GPU"
@@ -42,7 +45,7 @@ newGPU v f = newGPU'
         vFile = v,
         fFile = f,
         sourceOpts = C.defaultBoolOptions { C.locations = False },
-        sourceSearch = ["."],
+        sourceSearch = [".","./glsl"],
         sourceDefs = []
     }
 
@@ -72,7 +75,7 @@ newCPU cmd args = do
     cpu@(_,_,fh) <- hPipeBoth cmd args
     Size w h <- get windowSize
     vars <- newMVar [show (w,h)]
-    return $ CPU { cpuProg = cpu, cpuVars = vars }
+    return $ CPU cpu
 
 -- | Bind uniform variables to a program object
 bindProgram :: (Uniform a, Show a) => Prog -> String -> a -> IO ()
@@ -81,8 +84,8 @@ bindProgram (GPU prog) key value = do
     reportErrors
     uniform location $= value
 bindProgram CPU{ cpuProg = (_,_,fh) } key value = do
-    putStrLn $ show key ++ " = " ++ show value
     hPrint fh value
+    hFlush fh
 
 -- | Bind uniform variables to a program object
 bindvProgram :: Uniform a => Prog -> String -> Int -> Ptr a -> IO ()
@@ -94,17 +97,15 @@ bindvProgram CPU{} key size ptr = fail "Not supported."
 
 -- | Run a shader over some stateful operations
 withProgram :: Prog -> IO () -> IO ()
-withProgram (GPU prog) f = do
-    currentProgram $= Just prog
+withProgram prog@(GPU gpu) f = do
+    currentProgram $= Just gpu
     f
     currentProgram $= Nothing
-withProgram CPU{ cpuProg = (_,rh,wh) } f = do
+withProgram prog@CPU{ cpuProg = (_,rh,wh) } f = do
     size@(Size w h) <- get windowSize
-    hPrint wh (w,h)
     ptr <- mallocBytes (fromIntegral $ 3 * w * h)
-    withTexture2D size (PixelData RGB Byte ptr) $ do
-        f >> hFlush wh
-        hGetBuf rh ptr (fromIntegral $ w * h) >> f
+    hGetBuf rh ptr (fromIntegral $ 3 * w * h)
+    withTexture2D size (PixelData RGB Byte ptr) f
 
 withTexture2D :: Size -> PixelData (Color3 GLubyte) -> IO () -> IO ()
 withTexture2D (Size w h) texData f = do
@@ -133,10 +134,7 @@ compile srcFile sources = do
     shader <- liftIO $ do
         [sh] <- genObjectNames 1
         (shaderSource sh $=) . (:[])
-            =<< C.macroPass [] (sourceOpts sources)
-            =<< C.cppIfdef srcFile
-                [] [".","./glsl"] (sourceOpts sources)
-            =<< readFile srcFile
+            =<< preprocess srcFile sources
         compileShader sh
         return sh
     
@@ -145,3 +143,10 @@ compile srcFile sources = do
         else (throwError =<<)
             $ (((++ "\nIn file: " ++ srcFile ++ "\n")) <$>)
             $ liftIO (get $ shaderInfoLog shader)
+
+preprocess :: FilePath -> Sources -> IO String
+preprocess srcFile sources =
+    C.macroPass [] (sourceOpts sources)
+    =<< C.cppIfdef srcFile
+        [] (sourceSearch sources) (sourceOpts sources)
+    =<< readFile srcFile

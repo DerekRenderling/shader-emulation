@@ -41,7 +41,10 @@ main = do
         keySet = Set.empty,
         mousePos = (0,0),
         simGPU = gpu,
-        simCPU = False
+        simCPU = case argv of
+            [] -> False
+            ("cpu":_) -> True
+            _ -> False
     }
     
     actionOnWindowClose $= MainLoopReturns
@@ -146,9 +149,9 @@ runShader state = do
     
     when (isJust mProg) $ do
         let prog = fromJust mProg
+        bindProgram prog "pos" $ cameraPos state
+        bindProgram prog "dir" $ cameraDir state
         withProgram prog $ renderPrimitive Quads $ do
-            bindProgram prog "pos" (cameraPos state)
-            bindProgram prog "dir" (cameraDir state)
             color $ Color3 1 1 (1 :: GLfloat)
             quadScreen
 
