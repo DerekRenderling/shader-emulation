@@ -199,7 +199,7 @@ std::ostream & operator<<(std::ostream & os, const vec4 & v) {
 std::istream & operator>>(std::istream & is, vec2 & v) {
     std::string tok;
     is >> tok;
-    float x, y, z;
+    float x, y;
     sscanf(tok.c_str(), "(%f,%f)", &x, &y);
     v.x = x; v.y = y;
     return is;

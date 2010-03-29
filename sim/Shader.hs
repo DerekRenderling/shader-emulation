@@ -14,9 +14,8 @@ import Control.Monad.Error (ErrorT,throwError,liftIO)
 import Control.Monad (forM_)
 import Data.List (intersperse)
 
-import Control.Concurrent.MVar
 import System.Cmd.Utils (PipeHandle,hPipeBoth)
-import System.IO (Handle,hPrint,hGetBuf,hFlush)
+import System.IO (Handle,hPrint,hPutStrLn,hGetBuf,hFlush)
 
 data Sources = Sources {
     vFile :: FilePath,
@@ -35,6 +34,15 @@ data Prog
 instance Show Prog where
     show GPU{} = "GPU"
     show CPU{} = "CPU"
+
+class Show a => CpuUniform a where
+    cpuShow :: a -> String
+    cpuShow = show
+
+instance Show a => CpuUniform (Vertex2 a) where
+    cpuShow (Vertex2 x y) = show (x,y)
+instance Show a => CpuUniform (Vertex3 a) where
+    cpuShow (Vertex3 x y z) = show (x,y,z)
 
 type ShaderT = ErrorT String IO
 
@@ -74,17 +82,18 @@ newCPU :: FilePath -> [String] -> IO Prog
 newCPU cmd args = do
     cpu@(_,_,fh) <- hPipeBoth cmd args
     Size w h <- get windowSize
-    vars <- newMVar [show (w,h)]
+    hPrint fh (w,h)
+    hFlush fh
     return $ CPU cpu
 
 -- | Bind uniform variables to a program object
-bindProgram :: (Uniform a, Show a) => Prog -> String -> a -> IO ()
+bindProgram :: (Uniform a, Show a, CpuUniform a) => Prog -> String -> a -> IO ()
 bindProgram (GPU prog) key value = do
     location <- get $ uniformLocation prog key
     reportErrors
     uniform location $= value
 bindProgram CPU{ cpuProg = (_,_,fh) } key value = do
-    hPrint fh value
+    hPutStrLn fh $ cpuShow value
     hFlush fh
 
 -- | Bind uniform variables to a program object
@@ -102,6 +111,7 @@ withProgram prog@(GPU gpu) f = do
     f
     currentProgram $= Nothing
 withProgram prog@CPU{ cpuProg = (_,rh,wh) } f = do
+    hFlush wh
     size@(Size w h) <- get windowSize
     ptr <- mallocBytes (fromIntegral $ 3 * w * h)
     hGetBuf rh ptr (fromIntegral $ 3 * w * h)
