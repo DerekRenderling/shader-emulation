@@ -32,6 +32,14 @@ struct vec2 {
         return (*this)[i % 2];
     }
     
+    bool operator==(vec2 v) {
+        return v.x == x && v.y == y;
+    }
+    
+    bool operator!=(vec2 v) {
+        return v.x != x || v.y != y;
+    }
+    
     std::string to_s() {
         std::stringstream s;
         s << "(" << x << "," << y << ")";
@@ -67,6 +75,14 @@ struct vec3 {
         }
         std::cerr << "Out of bounds index " << i << " on vec3" <<std::endl;
         return (*this)[i % 3];
+    }
+    
+    bool operator==(vec3 v) {
+        return v.x == x && v.y == y && v.z == z;
+    }
+    
+    bool operator!=(vec3 v) {
+        return v.x != x || v.y != y || v.z != z;
     }
     
     std::string to_s() {
@@ -108,6 +124,14 @@ struct vec4 {
         }
         std::cerr << "Out of bounds index " << i << " on vec4" <<std::endl;
         return (*this)[i % 4];
+    }
+    
+    bool operator==(vec4 v) {
+        return v.x == x && v.y == y && v.z == z && v.w == w;
+    }
+    
+    bool operator!=(vec4 v) {
+        return v.x != x || v.y != y || v.z != z || v.w != w;
     }
     
     std::string to_s() {

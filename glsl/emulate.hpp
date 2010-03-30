@@ -13,8 +13,7 @@ static vec3 C, D;
 
 void _main();
 
-char * render(vec2 size, vec3 C, vec3 dir) {
-    char *buf = new char[int(3 * size.x * size.y)];
+void render(char *buf, vec2 size, vec3 C, vec3 dir) {
     int offset = 0;
     
     // proportions independent of aspect ratios
@@ -39,14 +38,15 @@ char * render(vec2 size, vec3 C, vec3 dir) {
             offset += 3;
         }
     }
-    
-    return buf;
 }
 
 int main(int argc, char *argv[]) {
     // generate a ppm file sometimes
     bool ppm = 0;
     if (argc >= 2 && !strcmp(argv[1],"ppm")) ppm = 1;
+    vec2 prev_size = vec2(0.0,0.0);
+    char *im = 0;
+    
     while (1) {
         std::cin >> C;
         vec3 dir;
@@ -55,8 +55,12 @@ int main(int argc, char *argv[]) {
         vec2 size;
         std::cin >> size;
         
-        char *im = render(size, C, dir);
+        if (size != prev_size) {
+            if (im) delete [] im;
+            im = new char[int(3 * size.x * size.y)];
+        }
         
+        render(im, size, C, dir);
         if (ppm) {
             // render shader output to ppm (http://en.wikipedia.org/wiki/Netpbm_format)
             std::cout << "P3" << std::endl;

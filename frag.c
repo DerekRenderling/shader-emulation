@@ -32,15 +32,20 @@ void main() {
     //const float epsilon = 0.00027; // sphere
     //const float epsilon = 0.003; // hyperboloid1
     //const float epsilon = 0.008; // hyperboloid2
-    const float epsilon = 0.0001; // torus
+    const float epsilon = 0.0002; // torus
+    const float d = 1000.0 / 2;
     
-    float t1 = secant(1.0, 0.0, epsilon);
+    float t1 = secant(0.0, 1.0, epsilon);
+    float t2 = secant(1.0, 2.0, epsilon);
+    float t3 = secant(3.0, 4.0, epsilon);
+    if (t2 < 0.0) t2 = t1;
+    if (t3 < 0.0) t3 = t1;
     
     if (t1 < 0.0) {
         gl_FragColor = vec4(0.5,0.5,0.5,1.0);
     }
     else {
-        float T = t1;
+        float T = min(t1,t2);
         vec3 P = C + T * D; // point of intersection
         float dt = 0.01;
         vec3 PX = P.x - (C - (geometry(P.x + dt, P.y, P.z) - T) * D);
