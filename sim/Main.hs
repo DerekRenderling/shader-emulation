@@ -9,6 +9,9 @@ import Control.Monad (when,forM_,join)
 import Control.Monad.Error (runErrorT)
 import Data.Maybe (fromJust,isJust,isNothing)
 
+import System.Process (system)
+import System.Exit (ExitCode(..))
+
 import Shader
 
 data State = State {
@@ -80,13 +83,20 @@ onKeyUp state (Char ' ') = do
     print state
     print $ dirVector $ cameraDir $ state
     return state
--- recompile the shaders
-onKeyUp state (Char 'r') =
+-- recompile for the gpu
+onKeyUp state@State{ simCPU = False } (Char 'r') =
     (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
         Left msg -> putStrLn msg >> return state
         Right gpu -> do
             putStrLn "Recompiled for the GPU"
             return $ state { simGPU = Just gpu }
+-- recompile for the cpu
+onKeyUp state@State{ simCPU = True } (Char 'r') = do
+    (=<< system "make clean && make frag") $ \status -> case status of
+        ExitSuccess -> putStrLn "Recompiled for the CPU"
+        ExitFailure{} -> putStrLn "Failed to compile for the CPU"
+    return state
+
 -- toggle cpu mode
 onKeyUp state (Char 'c') = do
     let cpu = simCPU state
