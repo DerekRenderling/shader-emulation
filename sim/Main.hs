@@ -20,7 +20,8 @@ data State = State {
     keySet :: Set.Set Key,
     mousePos :: (Int,Int),
     simGPU :: Maybe Prog,
-    simCPU :: Bool
+    simCPU :: Maybe Prog,
+    simUseCPU :: Bool
 } deriving Show
 
 dirVector :: Vertex2 GLfloat -> Vertex3 GLfloat
@@ -45,6 +46,7 @@ main = do
         else (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
             Left msg -> putStrLn msg >> return Nothing
             Right prog -> return $ Just prog
+    cpu <- newCPU "./frag" []
     
     stateVar <- newMVar $ State {
         cameraPos = Vertex3 0 (-3) 0,
@@ -52,7 +54,8 @@ main = do
         keySet = Set.empty,
         mousePos = (0,0),
         simGPU = gpu,
-        simCPU = isNothing gpu
+        simCPU = cpu,
+        simUseCPU = isNothing gpu
     }
     
     actionOnWindowClose $= MainLoopReturns
@@ -84,25 +87,31 @@ onKeyUp state (Char ' ') = do
     print $ dirVector $ cameraDir $ state
     return state
 -- recompile for the gpu
-onKeyUp state@State{ simCPU = False } (Char 'r') =
+onKeyUp state@State{ simUseCPU = False } (Char 'r') =
     (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
         Left msg -> putStrLn msg >> return state
         Right gpu -> do
             putStrLn "Recompiled for the GPU"
             return $ state { simGPU = Just gpu }
 -- recompile for the cpu
-onKeyUp state@State{ simCPU = True } (Char 'r') = do
+onKeyUp state@State{ simUseCPU = True } (Char 'r') = do
     (=<< system "make clean && make frag") $ \status -> case status of
-        ExitSuccess -> putStrLn "Recompiled for the CPU"
-        ExitFailure{} -> putStrLn "Failed to compile for the CPU"
-    return state
+        ExitSuccess -> do
+            putStrLn "Recompiled for the CPU"
+            case simCPU state of
+                Nothing -> return ()
+                Just prog -> killCPU prog
+            (\cpu -> state { simCPU = cpu }) <$> newCPU "./frag" []
+        ExitFailure{} -> do
+            putStrLn "Failed to compile for the CPU"
+            return state
 
 -- toggle cpu mode
 onKeyUp state (Char 'c') = do
-    let cpu = simCPU state
+    let useCPU = simUseCPU state
     putStrLn . ("Switched to " ++) . (++ " mode")
-        $ if cpu then "GPU" else "CPU"
-    return $ state { simCPU = not cpu }
+        $ if useCPU then "GPU" else "CPU"
+    return $ state { simUseCPU = not useCPU }
 onKeyUp state key = return state
 
 onKeyDown :: State -> Key -> IO State
@@ -161,8 +170,8 @@ display state = do
 
 runShader :: State -> IO ()
 runShader state = do
-    mProg <- if simCPU state
-        then Just <$> newCPU "./frag" []
+    mProg <- if simUseCPU state
+        then return $ simCPU state
         else return $ simGPU state
     
     when (isJust mProg) $ do

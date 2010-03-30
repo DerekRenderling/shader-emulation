@@ -6,7 +6,7 @@ varying vec3 D;
 #endif
 
 #include "geom.h"
-#define geometry sphere
+#define geometry torus
 #define surface(T) XYZ(geometry,T)
 
 float secant(float xn_a, float xn_b, float epsilon) {
@@ -29,10 +29,10 @@ float secant(float xn_a, float xn_b, float epsilon) {
 
 void main() {
     // use the secant method on this interval
-    const float epsilon = 0.00027; // sphere
+    //const float epsilon = 0.00027; // sphere
     //const float epsilon = 0.003; // hyperboloid1
     //const float epsilon = 0.008; // hyperboloid2
-    //const float epsilon = 0.0001; // torus
+    const float epsilon = 0.0001; // torus
     
     float t1 = secant(1.0, 0.0, epsilon);
     

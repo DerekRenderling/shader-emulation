@@ -1,4 +1,4 @@
-all: clean frag demo
+all: clean frag ppm
 
 clean:
 	rm -f frag
@@ -7,9 +7,9 @@ stub:
 	g++ -DCPU -O3 -Iglsl frag.stub.c -o frag
 
 frag:
-	g++ -DCPU -O3 -Iglsl frag.c -o frag -fopenmp
+	g++ -DCPU -O3 -Iglsl frag.c -o frag
 
-demo:
+ppm:
 	bash -c 'echo -e "(400,300)\n(0,-3,0)\n(0,-1,0)" | ./frag ppm > im.ppm'
 	eog im.ppm
 

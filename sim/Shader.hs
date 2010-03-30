@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 module Shader (
     Sources(..), Prog(..),
-    newGPU, newGPU', newCPU,
+    newGPU, newGPU', newCPU, killCPU,
     withProgram, bindProgram, bindvProgram,
     withTexture2D, preprocess
 ) where
@@ -14,7 +14,8 @@ import Control.Monad.Error (ErrorT,throwError,liftIO)
 import Control.Monad (forM_)
 import Data.List (intersperse)
 
-import System.Cmd.Utils (PipeHandle,hPipeBoth)
+import System.Posix.Signals (signalProcess,sigHUP)
+import System.Cmd.Utils (PipeHandle(..),hPipeBoth)
 import System.IO (Handle,hPrint,hPutStrLn,hGetBuf,hFlush)
 
 data Sources = Sources {
@@ -78,13 +79,12 @@ newGPU' sources = do
 -- | Create an emulated shader from a command.
 -- The command should read (width,height) followed by the uniform parameters
 -- line-by-line. Output should be raw RGB bytes on stdout.
-newCPU :: FilePath -> [String] -> IO Prog
-newCPU cmd args = do
-    cpu@(_,_,fh) <- hPipeBoth cmd args
-    Size w h <- get windowSize
-    hPrint fh (w,h)
-    hFlush fh
-    return $ CPU cpu
+newCPU :: FilePath -> [String] -> IO (Maybe Prog)
+newCPU cmd args = Just . CPU <$> hPipeBoth cmd args
+
+killCPU :: Prog -> IO ()
+killCPU (CPU (PipeHandle{ processID = pid },_,_)) = signalProcess sigHUP pid
+killCPU _ = return ()
 
 -- | Bind uniform variables to a program object
 bindProgram :: (Uniform a, Show a, CpuUniform a) => Prog -> String -> a -> IO ()
@@ -94,7 +94,6 @@ bindProgram (GPU prog) key value = do
     uniform location $= value
 bindProgram CPU{ cpuProg = (_,_,fh) } key value = do
     hPutStrLn fh $ cpuShow value
-    hFlush fh
 
 -- | Bind uniform variables to a program object
 bindvProgram :: Uniform a => Prog -> String -> Int -> Ptr a -> IO ()
@@ -111,8 +110,8 @@ withProgram prog@(GPU gpu) f = do
     f
     currentProgram $= Nothing
 withProgram prog@CPU{ cpuProg = (_,rh,wh) } f = do
-    hFlush wh
     size@(Size w h) <- get windowSize
+    hPrint wh (w,h) >> hFlush wh
     ptr <- mallocBytes (fromIntegral $ 3 * w * h)
     hGetBuf rh ptr (fromIntegral $ 3 * w * h)
     withTexture2D size (PixelData RGB UnsignedByte ptr) f

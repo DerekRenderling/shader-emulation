@@ -48,12 +48,12 @@ int main(int argc, char *argv[]) {
     bool ppm = 0;
     if (argc >= 2 && !strcmp(argv[1],"ppm")) ppm = 1;
     while (1) {
-        vec2 size;
-        std::cin >> size;
         std::cin >> C;
         vec3 dir;
         std::cin >> dir;
         dir = normalize(dir);
+        vec2 size;
+        std::cin >> size;
         
         char *im = render(size, C, dir);
         
