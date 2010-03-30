@@ -116,7 +116,11 @@ onKeyUp state key = return state
 
 onKeyDown :: State -> Key -> IO State
 -- escape key exits application
-onKeyDown state (Char '\27') = leaveMainLoop >> return state
+onKeyDown state (Char '\27') = do
+    case simCPU state of
+        Nothing -> return ()
+        Just prog -> killCPU prog
+    leaveMainLoop >> return state
 onKeyDown state key = return state
 
 keyboard :: State -> Key -> KeyState -> Modifiers -> Position -> State
