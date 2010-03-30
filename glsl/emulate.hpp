@@ -63,26 +63,16 @@ int main(int argc, char *argv[]) {
         render(im, size, C, dir);
         if (ppm) {
             // render shader output to ppm (http://en.wikipedia.org/wiki/Netpbm_format)
-            std::cout << "P3" << std::endl;
+            std::cout << "P6" << std::endl;
             std::cout << size.x << " " << size.y << std::endl;
             std::cout << 255 << std::endl;
-            
-            for (int y = 0; y < size.y; y++) {
-                for (int x = 0; x < size.x; x++) {
-                    int offset = 3 * (y * size.x + x);
-                    unsigned int r = im[offset + 0];
-                    unsigned int g = im[offset + 1];
-                    unsigned int b = im[offset + 2];
-                    std::cout << r << " " << g << " " << b << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
-        else {
-            fwrite(im, 3, size.x * size.y, stdout);
             fflush(stdout);
         }
+        fwrite(im, 3, size.x * size.y, stdout);
+        fflush(stdout);
+        if (ppm) break; // exit right away for ppm
     }
+    return 0;
 }
 
 #define main _main
