@@ -24,10 +24,6 @@ int main(int argc, char *argv[]) {
     vec3 dir;
     std::cin >> dir;
     
-    std::cerr << "size=" << size << std::endl;
-    std::cerr << "C=" << C << std::endl;
-    std::cerr << "dir=" << dir << std::endl;
-    
     dir = normalize(dir);
     
     float theta = atan2(dir.x,dir.z);
@@ -52,11 +48,7 @@ int main(int argc, char *argv[]) {
         float y = sa * (2.0 * (yi / size.y) - 1.0);
         for (int xi = 0; xi < size.x; xi++) {
             float x = as * (2.0 * (xi / size.x) - 1.0);
-            //D = normalize(vec3(x,-1,y));
-            //D = normalize(vec3(x,y,1));
             D = normalize(dir + vec3(x,-1,y));
-            
-            //std::cerr << normalize(vec3(x,-1,y)) << "  versus  " << D << std::endl;
             
             _main();
             

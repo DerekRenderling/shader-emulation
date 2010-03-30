@@ -4,13 +4,12 @@ import Control.Concurrent (newMVar,takeMVar,putMVar)
 import qualified Data.Set as Set
 
 import Control.Applicative ((<$>),(<*>))
-import Control.Arrow (first,second,(&&&))
-import Control.Monad (when)
+import Control.Arrow (first,second,(&&&),(***))
+import Control.Monad (when,forM_,join)
 import Control.Monad.Error (runErrorT)
 import Data.Maybe (fromJust,isJust,isNothing)
 
 import Shader
-import Util
 
 data State = State {
     cameraPos :: Vertex3 GLfloat,
@@ -21,6 +20,13 @@ data State = State {
     simCPU :: Bool
 } deriving Show
 
+dirVector :: Vertex2 GLfloat -> Vertex3 GLfloat
+dirVector (Vertex2 theta rho) =
+    Vertex3
+        (sin theta)
+        (-1 * cos theta * cos rho)
+        (sin rho)
+ 
 main :: IO ()
 main = do
     (_, argv) <- getArgsAndInitialize
@@ -70,7 +76,10 @@ main = do
 
 onKeyUp :: State -> Key -> IO State
 -- print the state
-onKeyUp state (Char ' ') = print state >> return state
+onKeyUp state (Char ' ') = do
+    print state
+    print $ dirVector $ cameraDir $ state
+    return state
 -- recompile the shaders
 onKeyUp state (Char 'r') =
     (runErrorT (newGPU "vert.c" "frag.c") >>=) $ \p -> case p of
@@ -162,4 +171,9 @@ quadScreen = do
     let
         as = fromIntegral w / fromIntegral h
         xy = [(-as,1),(as,1),(as,-1),(-as,-1)] :: [(GLfloat,GLfloat)]
-    mapM_ vertex [ Vertex3 x y 0 | (x,y) <- xy ]
+    forM_ xy $ \(x,y) -> do
+        let (tx,ty) = join (***) tpos (x,y)
+            tpos :: GLfloat -> GLfloat
+            tpos = fromIntegral . fromEnum . (> 0)
+        texCoord $ TexCoord2 tx ty
+        vertex $ Vertex3 x y 0

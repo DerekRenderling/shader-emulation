@@ -131,18 +131,12 @@ withTexture2D (Size w h) texData f = do
     textureWrapMode Texture2D S $= (Repeated, Repeat)
     textureWrapMode Texture2D T $= (Repeated, Repeat)
     textureFilter Texture2D $= ((Nearest, Nothing), Nearest)
-    texImage2D
-        Nothing -- not a cube map
-        NoProxy -- standard texture 2d
-        0 -- level 0
-        RGB' -- internal format
-        (TextureSize2D w h) -- texture size
-        0 -- border
-        texData
+    texImage2D Nothing NoProxy 0  RGBA' (TextureSize2D w h) 0 texData
+    
     f -- user geometry
     
     -- set texture capability back to whatever it was before
-    --texture Texture2D $= prevCap
+    texture Texture2D $= prevCap
 
 -- compile a shader from source (hidden)
 compile :: Shader s => FilePath -> Sources -> ShaderT s

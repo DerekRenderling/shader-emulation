@@ -6,10 +6,8 @@ varying vec3 D;
 #endif
 
 #include "geom.h"
-#define geometry torus
+#define geometry sphere
 #define surface(T) XYZ(geometry,T)
-
-static float return_float;
 
 float secant(float xn_a, float xn_b, float epsilon) {
     float d;
@@ -31,20 +29,18 @@ float secant(float xn_a, float xn_b, float epsilon) {
 
 void main() {
     // use the secant method on this interval
-    //const float epsilon = 0.00027; // sphere
+    const float epsilon = 0.00027; // sphere
     //const float epsilon = 0.003; // hyperboloid1
     //const float epsilon = 0.008; // hyperboloid2
-    const float epsilon = 0.0001; // torus
+    //const float epsilon = 0.0001; // torus
     
     float t1 = secant(1.0, 0.0, epsilon);
-    float t2 = secant(5.0, 3.0, epsilon);
-    if (t1 < 0.0) t1 = t2;
     
-    if (t1 < 0.0 && t2 < 0.0) {
+    if (t1 < 0.0) {
         gl_FragColor = vec4(0.5,0.5,0.5,1.0);
     }
     else {
-        float T = min(t1,t2);
+        float T = t1;
         vec3 P = C + T * D; // point of intersection
         float dt = 0.01;
         vec3 PX = P.x - (C - (geometry(P.x + dt, P.y, P.z) - T) * D);
