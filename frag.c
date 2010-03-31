@@ -44,7 +44,7 @@ void main() {
         //float T = t1;
         //float T = min(t1,t2);
         //float T = min(t1,t2,t3);
-        float T = min(t1,t2,t3,t4);
+        float T = min(min(t1,t2),min(t3,t4));
         vec3 P = C + T * D; // point of intersection
         float dt = 0.01;
         vec3 PX = P.x - (C - (geometry(P.x + dt, P.y, P.z) - T) * D);
