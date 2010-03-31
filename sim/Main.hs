@@ -181,10 +181,11 @@ runShader state = do
     when (isJust mProg) $ do
         let prog = fromJust mProg
             (Vertex2 theta rho) = cameraDir state
-        bindProgram prog "pos" $ cameraPos state
-        bindProgram prog "dir"
-            $ Vertex3 (sin theta) (-1 * cos theta * cos rho) (sin rho)
-        withProgram prog $ renderPrimitive Quads $ do
+            binds = do
+                bindProgram prog "pos" $ cameraPos state
+                bindProgram prog "dir"
+                    $ Vertex3 (sin theta) (-1 * cos theta * cos rho) (sin rho)
+        withProgram prog binds $ renderPrimitive Quads $ do
             color $ Color3 1 1 (1 :: GLfloat)
             quadScreen
 

@@ -27,6 +27,7 @@ data Sources = Sources {
 }
 
 type CPUProgram = (PipeHandle, Handle, Handle)
+type Bindings = IO ()
 
 data Prog
     = GPU { gpuProg :: Program }
@@ -104,13 +105,14 @@ bindvProgram (GPU prog) key size ptr = do
 bindvProgram CPU{} key size ptr = fail "Not supported."
 
 -- | Run a shader over some stateful operations
-withProgram :: Prog -> IO () -> IO ()
-withProgram prog@(GPU gpu) f = do
+withProgram :: Prog -> Bindings -> IO () -> IO ()
+withProgram prog@(GPU gpu) bindings f = do
     currentProgram $= Just gpu
-    f
+    bindings >> f
     currentProgram $= Nothing
-withProgram prog@CPU{ cpuProg = (_,rh,wh) } f = do
+withProgram prog@CPU{ cpuProg = (_,rh,wh) } bindings f = do
     size@(Size w h) <- get windowSize
+    bindings
     hPrint wh (w,h) >> hFlush wh
     ptr <- mallocBytes (fromIntegral $ 3 * w * h)
     hGetBuf rh ptr (fromIntegral $ 3 * w * h)
