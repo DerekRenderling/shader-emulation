@@ -61,17 +61,13 @@ void main() {
     const vec4 bg = vec4(0.5,0.5,0.5,1.0);
     
     // use the secant method on this interval
-    //const float epsilon = 0.00027; // sphere
-    //const float epsilon = 0.003; // hyperboloid1
-    //const float epsilon = 0.008; // hyperboloid2
-    const float epsilon = 1e-16; // torus
     const float d = length(C);
     
     float t = pmin(
-        secant_method(d - 1.1, d - 1.0, epsilon),
-        secant_method(d - 1.0, d - 0.9, epsilon),
-        secant_method(d + 1.1, d + 1.0, epsilon),
-        secant_method(d + 1.0, d + 0.9, epsilon)
+        //secant_method(d - 2.0, d - 1.5, 1e-12),
+        secant_method(d - 1.2, d - 1.1, 1e-16),
+        secant_method(d + 1.1, d + 1.0, 1e-12),
+        secant_method(d + 1.1, d + 0.9, 1e-12)
     );
     if (t < 0.0) {
         gl_FragColor = bg;
