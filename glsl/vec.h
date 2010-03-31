@@ -40,6 +40,10 @@ struct vec2 {
         return v.x != x || v.y != y;
     }
     
+    vec2 operator-() {
+        return vec2(-x,-y);
+    }
+    
     std::string to_s() {
         std::stringstream s;
         s << "(" << x << "," << y << ")";
@@ -83,6 +87,10 @@ struct vec3 {
     
     bool operator!=(vec3 v) {
         return v.x != x || v.y != y || v.z != z;
+    }
+    
+    vec3 operator-() {
+        return vec3(-x,-y,-z);
     }
     
     std::string to_s() {
@@ -132,6 +140,10 @@ struct vec4 {
     
     bool operator!=(vec4 v) {
         return v.x != x || v.y != y || v.z != z || v.w != w;
+    }
+    
+    vec4 operator-() {
+        return vec4(-x,-y,-z,-w);
     }
     
     std::string to_s() {
@@ -245,50 +257,6 @@ std::istream & operator>>(std::istream & is, vec4 & v) {
     scanf(tok.c_str(), "(%f,%f,%f,%f)", &x, &y, &z, &w);
     v.x = x; v.y = y; v.z = z; v.w = w;
     return is;
-}
-
-float length(vec2 v) {
-    return sqrt(v.x*v.x + v.y*v.y);
-}
-
-float length(vec3 v) {
-    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
-}
-
-float length(vec4 v) {
-    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
-}
-
-float dot(vec2 a, vec2 b) {
-    return a.x * b.x + a.y * b.y;
-}
-
-float dot(vec3 a, vec3 b) {
-    return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-float dot(vec4 a, vec4 b) {
-    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-}
-
-vec2 normalize(vec2 v) {
-    return v / length(v);
-}
-
-vec3 normalize(vec3 v) {
-    return v / length(v);
-}
-
-vec4 normalize(vec4 v) {
-    return v / length(v);
-}
-
-vec3 cross(vec3 v1, vec3 v2) {
-    vec3(
-        v1.y * v2.z - v1.z * v2.y,
-        v1.z * v2.x - v1.x * v2.z,
-        v1.x * v2.y - v1.y * v2.x
-    );
 }
 
 #endif

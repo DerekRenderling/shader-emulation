@@ -65,69 +65,105 @@
 
 // component-wise operations on two vectors
 #define app_v2(f) \
-    vec2 f(vec2 v1, vec2 v2) { \
-        return vec2(f(v1.x,v2.x),f(v1.y,v2.y)); \
+    vec2 f(vec2 a, vec2 b) { \
+        return vec2(f(a.x,b.x),f(a.y,b.y)); \
     } \
-    vec3 f(vec3 v1, vec3 v2) { \
+    vec3 f(vec3 a, vec3 b) { \
         return vec3( \
-            f(v1.x,v2.x), \
-            f(v1.y,v2.y), \
-            f(v1.z,v2.z) \
+            f(a.x,b.x), \
+            f(a.y,b.y), \
+            f(a.z,b.z) \
         ); \
     } \
-    vec4 f(vec4 v1, vec4 v2) { \
+    vec4 f(vec4 a, vec4 b) { \
         return vec4( \
-            f(v1.x,v2.x), \
-            f(v1.y,v2.y), \
-            f(v1.z,v2.z), \
-            f(v1.w,v2.w) \
+            f(a.x,b.x), \
+            f(a.y,b.y), \
+            f(a.z,b.z), \
+            f(a.w,b.w) \
         ); \
     } \
 
 // component-wise operations on two vectors and one float
 #define app_v2f(f) \
-    vec2 f(vec2 v1, vec2 v2, float x) { \
-        return vec2(f(v1.x,v2.x,x),f(v1.y,v2.y,x)); \
+    vec2 f(vec2 a, vec2 b, float x) { \
+        return vec2(f(a.x,b.x,x),f(a.y,b.y,x)); \
     } \
-    vec3 f(vec3 v1, vec3 v2, float x) { \
+    vec3 f(vec3 a, vec3 b, float x) { \
         return vec3( \
-            f(v1.x,v2.x,x), \
-            f(v1.y,v2.y,x), \
-            f(v1.z,v2.z,x) \
+            f(a.x,b.x,x), \
+            f(a.y,b.y,x), \
+            f(a.z,b.z,x) \
         ); \
     } \
-    vec4 f(vec4 v1, vec4 v2, float x) { \
+    vec4 f(vec4 a, vec4 b, float x) { \
         return vec4( \
-            f(v1.x,v2.x,x), \
-            f(v1.y,v2.y,x), \
-            f(v1.z,v2.z,x), \
-            f(v1.w,v2.w,x) \
+            f(a.x,b.x,x), \
+            f(a.y,b.y,x), \
+            f(a.z,b.z,x), \
+            f(a.w,b.w,x) \
         ); \
     } \
 
 // component-wise operations on three vectors
 #define app_v3(f) \
-    vec2 f(vec2 v1, vec2 v2, vec2 v3) { \
+    vec2 f(vec2 a, vec2 b, vec2 c) { \
         return vec2( \
-            f(v1.x,v2.x,v3.x), \
-            f(v1.y,v2.y,v3.y) \
+            f(a.x,b.x,c.x), \
+            f(a.y,b.y,c.y) \
         ); \
     } \
-    vec3 f(vec3 v1, vec3 v2, vec3 v3) { \
+    vec3 f(vec3 a, vec3 b, vec3 c) { \
         return vec3( \
-            f(v1.x,v2.x,v3.x), \
-            f(v1.y,v2.y,v3.y), \
-            f(v1.z,v2.z,v3.z) \
+            f(a.x,b.x,c.x), \
+            f(a.y,b.y,c.y), \
+            f(a.z,b.z,c.z) \
         ); \
     } \
-    vec4 f(vec4 v1, vec4 v2, vec4 v3) { \
+    vec4 f(vec4 a, vec4 b, vec4 c) { \
         return vec4( \
-            f(v1.x,v2.x,v3.x), \
-            f(v1.y,v2.y,v3.y), \
-            f(v1.z,v2.z,v3.z), \
-            f(v1.w,v2.w,v3.w) \
+            f(a.x,b.x,c.x), \
+            f(a.y,b.y,c.y), \
+            f(a.z,b.z,c.z), \
+            f(a.w,b.w,c.w) \
         ); \
     } \
+
+#define def_v1(f,a,expr) \
+    float f(float a) { expr; } \
+    vec2 f(vec2 a) { expr; } \
+    vec3 f(vec3 a) { expr; } \
+    vec4 f(vec4 a) { expr; } \
+
+#define def_v2(f,a,b,expr) \
+    f(float a, float b) { expr; } \
+    f(vec2 a, vec2 b) { expr; } \
+    f(vec3 a, vec3 b) { expr; } \
+    f(vec4 a, vec4 b) { expr; } \
+
+#define defT_v1(f,a,expr) \
+    float f(float a, float b) { expr; } \
+    vec2 f(vec2 a) { expr; } \
+    vec3 f(vec3 a) { expr; } \
+    vec4 f(vec4 a) { expr; } \
+
+#define defT_v2(f,a,b,expr) \
+    float f(float a, float b) { expr; } \
+    vec2 f(vec2 a, vec2 b) { expr; } \
+    vec3 f(vec3 a, vec3 b) { expr; } \
+    vec4 f(vec4 a, vec4 b) { expr; } \
+
+#define defT_v2f(f,a,b,c,expr) \
+    float f(float a, float b, float c) { expr; } \
+    vec2 f(vec2 a, vec2 b, float c) { expr; } \
+    vec3 f(vec3 a, vec3 b, float c) { expr; } \
+    vec4 f(vec4 a, vec4 b, float c) { expr; } \
+
+#define defT_v3(f,a,b,c,expr) \
+    float f(float a, float b, float c) { expr; } \
+    vec2 f(vec2 a, vec2 b, vec2 c) { expr; } \
+    vec3 f(vec3 a, vec3 b, vec2 c) { expr; } \
+    vec4 f(vec4 a, vec4 b, vec2 c) { expr; } \
 
 // angle and trigonometry functions
 
@@ -226,6 +262,71 @@ float smoothstep(float edge0, float edge1, float x) {
 }
 app_f2v(smoothstep)
 app_v3(smoothstep)
+
+// geometric functions
+// none of these are component-wise
+float length(float x) {
+    return abs(x);
+}
+
+float length(vec2 v) {
+    return sqrt(v.x*v.x + v.y*v.y);
+}
+
+float length(vec3 v) {
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+float length(vec4 v) {
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
+}
+
+def_v2(float distance,a,b,
+    return length(a-b)
+);
+
+float dot(float a, float b) {
+    return a * b;
+}
+
+float dot(vec2 a, vec2 b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+float dot(vec3 a, vec3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+float dot(vec4 a, vec4 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+vec3 cross(vec3 a, vec3 b) {
+    return vec3(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    );
+}
+
+defT_v1(normalize,x, return x / length(x));
+
+// ignoring ftransform for now
+
+defT_v3(faceforward, N, I, Nref,
+    return dot(Nref,I) < 0.0 ? N : -N
+);
+
+defT_v2(reflect, I, N,
+    return I - 2 * dot(N,I) * N
+);
+
+defT_v2f(refract, I, N, eta,
+    float k = 1.0 - eta * eta * (1.0 - dot(N,I) * dot(N,I));
+    return k < 0.0
+        ? I * 0.0
+        : eta * I - (eta * dot(N,I) + sqrt(k)) * N
+);
 
 #undef app_v
 #undef app_vf

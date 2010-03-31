@@ -1,10 +1,4 @@
-#ifdef CPU
-#include "emulate.hpp"
-#else
-varying vec3 C;
-varying vec3 D;
-#endif
-
+#include "glsl.h"
 #include "geom.h"
 #define geometry torus
 #define surface(T) XYZ(geometry,T)
@@ -32,20 +26,25 @@ void main() {
     //const float epsilon = 0.00027; // sphere
     //const float epsilon = 0.003; // hyperboloid1
     //const float epsilon = 0.008; // hyperboloid2
-    const float epsilon = 0.0002; // torus
-    const float d = 1000.0 / 2;
+    const float epsilon = 1e-12; // torus
+    const float d = length(C);
     
-    float t1 = secant(0.0, 1.0, epsilon);
-    float t2 = secant(1.0, 2.0, epsilon);
-    float t3 = secant(3.0, 4.0, epsilon);
+    float t1 = secant(d - 1.1, d - 1.0, epsilon);
+    float t2 = secant(d - 1.0, d - 0.9, epsilon);
     if (t2 < 0.0) t2 = t1;
-    if (t3 < 0.0) t3 = t1;
+    float t3 = secant(d + 1.1, d + 1.0, epsilon);
+    if (t3 < 0.0) t3 = t2;
+    float t4 = secant(d + 1.0, d + 0.9, epsilon);
+    if (t4 < 0.0) t4 = t3;
     
-    if (t1 < 0.0) {
+    if (t4 < 0.0) {
         gl_FragColor = vec4(0.5,0.5,0.5,1.0);
     }
     else {
-        float T = min(t1,t2);
+        //float T = t1;
+        //float T = min(t1,t2);
+        //float T = min(t1,t2,t3);
+        float T = min(t1,t2,t3,t4);
         vec3 P = C + T * D; // point of intersection
         float dt = 0.01;
         vec3 PX = P.x - (C - (geometry(P.x + dt, P.y, P.z) - T) * D);

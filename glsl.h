@@ -1,5 +1,5 @@
 #ifdef CPU
-#include "glsl/emulate.hpp"
+#include "glsl/cpu.h"
 #else
 varying vec3 C;
 varying vec3 D;

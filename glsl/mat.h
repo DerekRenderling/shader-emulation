@@ -2,6 +2,8 @@
 #define GLSL_MAT_H
 #include "vec.h"
 
+float dot(vec4, vec4);
+
 struct mat4 {
     vec4 cols[4];
     
