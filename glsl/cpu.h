@@ -24,6 +24,7 @@ void render(char *buf, vec2 size, vec3 C, vec3 dir) {
     float as = size.x > size.y ? size.x / size.y : 1.0;
     float sa = size.x > size.y ? 1.0 : size.y / size.x;
     
+    // opengl is backwards >_<
     for (int yi = size.y - 1; yi >= 0; yi--) {
         float y = sa * (2.0 * (yi / size.y) - 1.0);
         for (int xi = 0; xi < size.x; xi++) {

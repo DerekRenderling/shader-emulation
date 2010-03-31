@@ -49,8 +49,8 @@ main = do
     cpu <- newCPU "./frag" []
     
     stateVar <- newMVar $ State {
-        cameraPos = Vertex3 0 (-3) 0,
-        cameraDir = Vertex2 0 0,
+        cameraPos = Vertex3 0.0 (-2.4) (-1.4),
+        cameraDir = Vertex2 (-0.1) (-1.3),
         keySet = Set.empty,
         mousePos = (0,0),
         simGPU = gpu,
@@ -199,5 +199,5 @@ quadScreen = do
         let (tx,ty) = join (***) tpos (x,y)
             tpos :: GLfloat -> GLfloat
             tpos = fromIntegral . fromEnum . (> 0)
-        texCoord $ TexCoord2 tx ty
+        texCoord $ TexCoord2 tx (-ty)
         vertex $ Vertex3 x y 0
