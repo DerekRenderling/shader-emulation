@@ -1,5 +1,5 @@
-#ifndef MAT_H
-#define MAT_H
+#ifndef GLSL_MAT_H
+#define GLSL_MAT_H
 #include "vec.h"
 
 struct mat4 {

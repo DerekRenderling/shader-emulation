@@ -1,5 +1,5 @@
-#ifndef VEC_H
-#define VEC_H
+#ifndef GLSL_VEC_H
+#define GLSL_VEC_H
 #include <iostream>
 #include <sstream>
 #include <cstdio>
