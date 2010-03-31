@@ -29,7 +29,6 @@ void render(char *buf, vec2 size, vec3 C, vec3 dir) {
         for (int xi = 0; xi < size.x; xi++) {
             float x = as * (2.0 * (xi / size.x) - 1.0);
             D = normalize(dir + vec3(x,-1,y));
-            
             _main();
             
             float a = clamp(gl_FragColor.a, 0, 1);
