@@ -157,7 +157,7 @@ compile srcFile sources = do
 
 preprocess :: FilePath -> Sources -> IO String
 preprocess srcFile sources =
-    C.macroPass [] (sourceOpts sources)
+    C.macroPass (sourceDefs sources) (sourceOpts sources)
     =<< C.cppIfdef srcFile
-        [] (sourceSearch sources) (sourceOpts sources)
+        (sourceDefs sources) (sourceSearch sources) (sourceOpts sources)
     =<< readFile srcFile

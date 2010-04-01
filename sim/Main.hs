@@ -35,7 +35,7 @@ main :: IO ()
 main = do
     (_, argv) <- getArgsAndInitialize
     initialDisplayMode $= [ DoubleBuffered, RGBMode, WithDepthBuffer ]
-    initialWindowSize $= Size 800 600
+    initialWindowSize $= Size 400 300
     initialWindowPosition $= Position 0 0
     createWindow "ray tracer"
     depthMask $= Enabled
