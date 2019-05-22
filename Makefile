@@ -11,7 +11,7 @@ frag:
 
 ppm:
 	bash -c 'echo -e "(0.0,-2.4,-1.4)\n(0.0,-0.3,-0.9)\n(640,480)" | ./frag ppm > im.ppm'
-	eog im.ppm
+	open im.ppm
 
 shader:
 	ghc --make sim/Main.hs sim/Shader.hs -o Main

@@ -202,9 +202,9 @@ float inversesqrt(float x) {
 app_v(inversesqrt)
 
 // common functions
-float abs(float x) {
+/***float abs(float x) {
     return fabs(x);
-}
+}***/
 app_v(abs)
 
 float sign(float x) {

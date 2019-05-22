@@ -1,9 +1,9 @@
 #include "glsl.h"
 
-#define geometry torus
+//#define geometry torus
 
 // Try this one too! At runtime even! Just hit 'r'
-//#define geometry sphere
+#define geometry sphere
 
 #include "geom.h"
 
@@ -28,7 +28,7 @@ void main() {
         vec3 N = surfaceN(P, t, 0.01);
         vec3 L = normalize(vec3(3.0, 4.0, 5.0));
         float c = clamp(dot(N,L),0.0,1.0);
-        //gl_FragColor = vec4(clamp(N,0.0,1.0),1.0);
-        gl_FragColor = vec4(c,c,c,1.0);
+        gl_FragColor = vec4(clamp(N,0.0,1.0),1.0);
+        ///gl_FragColor = vec4(c,c,c,1.0);
     }
 }
