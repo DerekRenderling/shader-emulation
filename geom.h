@@ -27,7 +27,7 @@
 
 // simulation can define iteration level at compile-time (which can be at runtime)
 #ifndef ITERATIONS
-#define ITERATIONS 15
+#define ITERATIONS 1000
 #endif
 
 #define surface(T) XYZ(geometry,T)
